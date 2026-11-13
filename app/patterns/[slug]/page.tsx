@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 
 import { PatternCover } from "@/components/pattern-cover";
 import { FavoriteButton } from "@/components/pattern/favorite-button";
+import { PatternConfigurator } from "@/components/pattern/pattern-configurator";
 import { SizeFitSection } from "@/components/pattern/size-fit-section";
-import { SizePanel } from "@/components/pattern/size-panel";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatSewingHours, getLevelLabel } from "@/lib/format";
 import { CATEGORY_TITLES } from "@/lib/pattern-domain";
@@ -171,12 +171,20 @@ export default async function PatternPage({ params }: PatternPageProps) {
             </a>
           </div>
 
-          <SizePanel sizes={pattern.sizes} />
+          <PatternConfigurator
+            sizes={pattern.sizes}
+            params={pattern.params}
+            price={pattern.price}
+          />
         </aside>
       </div>
 
       <div className="mt-12">
-        <SizeFitSection sizes={pattern.sizes} categorySlug={pattern.categorySlug} />
+        <SizeFitSection
+          sizes={pattern.sizes}
+          categorySlug={pattern.categorySlug}
+          patternSlug={pattern.slug}
+        />
       </div>
     </div>
   );
