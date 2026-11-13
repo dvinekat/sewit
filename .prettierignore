@@ -9,3 +9,6 @@ doc/
 public/
 *.png
 scripts/*.py
+
+# SQL-миграции и сид форматируются вручную: Prettier не умеет SQL.
+supabase/
