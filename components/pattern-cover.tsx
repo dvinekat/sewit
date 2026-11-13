@@ -1,11 +1,11 @@
+import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
 /**
- * Иллюстративные обложки до появления фотографий: линейные силуэты на градиенте.
- * Когда у выкройки появится `cover_url`, компонент начнёт показывать `next/image`,
- * а иллюстрация останется фолбэком для карточек без фото.
+ * Обложка выкройки: фотография из бакета `covers`, если она загружена, иначе —
+ * иллюстративный силуэт. Так каталог выглядит цельно до появления контента (T-C04).
  */
 
 type ArtProps = { className?: string; style?: CSSProperties };
@@ -167,7 +167,32 @@ export function PatternSilhouette({ slug, className }: { slug: string; className
   return <Silhouette className={className} style={{ color: art.color }} />;
 }
 
-export function PatternCover({ slug, className }: { slug: string; className?: string }) {
+export function PatternCover({
+  slug,
+  className,
+  coverUrl,
+  alt = "",
+}: {
+  slug: string;
+  className?: string;
+  /** Публичный URL из `patterns.cover_url`; null — показываем иллюстрацию. */
+  coverUrl?: string | null;
+  alt?: string;
+}) {
+  if (coverUrl) {
+    return (
+      <div className={cn("relative overflow-hidden bg-secondary", className)}>
+        <Image
+          src={coverUrl}
+          alt={alt}
+          fill
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          className="object-cover"
+        />
+      </div>
+    );
+  }
+
   const art = getArt(slug);
 
   return (

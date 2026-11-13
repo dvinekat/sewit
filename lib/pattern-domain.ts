@@ -73,6 +73,15 @@ export interface Pattern {
 }
 
 /** Подписи категорий: в БД (README 5) хранятся только slug и title. */
+export const CATEGORY_TITLES: Record<CategorySlug, string> = {
+  dresses: "Платья",
+  skirts: "Юбки",
+  trousers: "Брюки",
+  tops: "Топы",
+  outerwear: "Верхняя одежда",
+};
+
+/** Описания категорий для шапки каталога: в БД (README 5) их нет. */
 export const CATEGORY_DESCRIPTIONS: Record<CategorySlug, string> = {
   dresses: "От платья-рубашки до комбинации — на каждый день и для выхода.",
   skirts: "Прямые, расклешённые и с разрезом — база гардероба.",

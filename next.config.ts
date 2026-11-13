@@ -14,6 +14,16 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  images: {
+    // Обложки лежат в публичном бакете `covers` проекта Supabase (README 8.7).
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
   typescript: {
     // Next запускает tsc дочерним процессом. В изолированном окружении DSH это
     // блокируется (spawn EPERM), поэтому проверка типов вынесена в `pnpm typecheck`.

@@ -11,8 +11,26 @@ export function formatPrice(kopecks: number): string {
   return `${priceFormatter.format(Math.round(kopecks / 100))} ₽`;
 }
 
-/** Русское склонение: 1 выкройка, 2 выкройки, 5 выкроек. */
-export function pluralizeRu(count: number, one: string, few: string, many: string): string {
+const fabricFormatter = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 });
+
+/**
+ * Расход ткани из `pattern_sizes` (метры при ширине 140–145 см).
+ * @throws RangeError если значение не положительное.
+ */
+export function formatFabricConsumption(meters: number): string {
+  if (!Number.isFinite(meters) || meters <= 0) {
+    throw new RangeError("Расход ткани должен быть положительным числом метров");
+  }
+
+  return `${fabricFormatter.format(meters)} м`;
+}
+
+/** Русское склонение: 1 выкройка, 2 выкройки, 5 выкроек. */ export function pluralizeRu(
+  count: number,
+  one: string,
+  few: string,
+  many: string,
+): string {
   const mod10 = Math.abs(count) % 10;
   const mod100 = Math.abs(count) % 100;
   if (mod10 === 1 && mod100 !== 11) return one;

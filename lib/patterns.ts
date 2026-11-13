@@ -128,3 +128,50 @@ export async function listPatternsByCategory(slug?: CategorySlug): Promise<Patte
 
   return slug ? patterns.filter((pattern) => pattern.categorySlug === slug) : patterns;
 }
+
+/**
+ * Одна опубликованная выкройка по slug (T-13).
+ *
+ * Черновик и несуществующий slug неотличимы для клиента — оба дают `null`,
+ * а страница показывает 404 (FR-8.2).
+ */
+export async function getPatternBySlug(slug: string): Promise<Pattern | null> {
+  if (!hasSupabaseEnv()) {
+    if (process.env.CI) {
+      console.warn("[выкройка] Supabase не настроен на сборке CI");
+      return null;
+    }
+
+    throw new Error("Supabase не настроен: проверьте .env.local");
+  }
+
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("patterns")
+      .select(PATTERN_SELECT)
+      .eq("status", "published")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      if (process.env.CI) {
+        console.warn(
+          `[выкройка] Supabase недоступен на сборке CI: ${describeSupabaseError(error)}`,
+        );
+        return null;
+      }
+
+      throw new Error(`Не удалось загрузить выкройку: ${describeSupabaseError(error)}`);
+    }
+
+    return data ? mapPatternRow(data as unknown as PatternRow) : null;
+  } catch (error) {
+    if (process.env.CI) {
+      console.warn(`[выкройка] Supabase недоступен на сборке CI: ${describeSupabaseError(error)}`);
+      return null;
+    }
+
+    throw error instanceof Error ? error : new Error(describeSupabaseError(error));
+  }
+}

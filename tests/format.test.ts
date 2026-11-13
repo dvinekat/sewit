@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatFabricConsumption,
   formatPatternCount,
   formatPrice,
   formatSewingHours,
@@ -21,6 +22,19 @@ describe("formatPrice", () => {
 
   it("отклоняет отрицательную цену", () => {
     expect(() => formatPrice(-1)).toThrow(RangeError);
+  });
+});
+
+describe("formatFabricConsumption", () => {
+  it("показывает метры с запятой и без лишних нулей", () => {
+    expect(normalize(formatFabricConsumption(2.5))).toBe("2,5 м");
+    expect(normalize(formatFabricConsumption(2))).toBe("2 м");
+    expect(normalize(formatFabricConsumption(2.25))).toBe("2,25 м");
+  });
+
+  it("отклоняет ноль и отрицательные значения", () => {
+    expect(() => formatFabricConsumption(0)).toThrow(RangeError);
+    expect(() => formatFabricConsumption(-1)).toThrow(RangeError);
   });
 });
 
