@@ -365,5 +365,32 @@ exception
     raise warning 'Демо-пользователи не созданы (%): создайте их через форму регистрации', sqlerrm;
 end $$;
 
+-- GoTrue при входе ждёт в токен-колонках пустую строку, а не NULL: иначе логин
+-- отвечает «Database error querying schema» (scan error: converting NULL to string).
+-- Чиним уже созданные строки и страхуем повторный запуск сида.
+-- https://supabase.com/docs/guides/troubleshooting/database-error-saving-new-user-RU_EwB
+do $$
+declare
+  col text;
+begin
+  foreach col in array array[
+    'confirmation_token', 'recovery_token', 'email_change_token_new', 'email_change'
+  ] loop
+    if exists (
+      select 1
+      from information_schema.columns
+      where table_schema = 'auth' and table_name = 'users' and column_name = col
+    ) then
+      execute format(
+        'update auth.users set %I = coalesce(%I, %L) where email in (%L, %L)',
+        col, col, '', 'admin@sewit.example', 'user@sewit.example'
+      );
+    end if;
+  end loop;
+exception
+  when others then
+    raise warning 'Не удалось починить токены демо-пользователей: %', sqlerrm;
+end $$;
+
 -- Сообщаем PostgREST, что схема изменилась, — иначе первые запросы получат 404.
 notify pgrst, 'reload schema';
