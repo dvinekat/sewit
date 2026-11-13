@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PatternCover } from "@/components/pattern-cover";
+import { FavoriteButton } from "@/components/pattern/favorite-button";
 import { SizeFitSection } from "@/components/pattern/size-fit-section";
 import { SizePanel } from "@/components/pattern/size-panel";
 import { Badge } from "@/components/ui/badge";
@@ -117,7 +118,7 @@ export default async function PatternPage({ params }: PatternPageProps) {
           </section>
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-24">
+        <aside className="min-w-0 space-y-6 lg:sticky lg:top-24">
           <div className="rounded-3xl border border-line bg-card p-6">
             <Badge variant="outline">{CATEGORY_TITLES[pattern.categorySlug]}</Badge>
 
@@ -152,6 +153,10 @@ export default async function PatternPage({ params }: PatternPageProps) {
             >
               Выбрать размер
             </a>
+
+            <div className="mt-3">
+              <FavoriteButton patternId={pattern.id} patternSlug={pattern.slug} />
+            </div>
 
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
               Лекала уже с припусками. После покупки выкройка появится в личном кабинете, а PDF

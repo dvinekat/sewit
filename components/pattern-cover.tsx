@@ -208,10 +208,15 @@ export function PatternCover({
             "radial-gradient(circle at 22% 18%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 52%)",
         }}
       />
-      <PatternSilhouette
-        slug={slug}
-        className="relative h-[86%] w-auto drop-shadow-[0_12px_22px_rgba(80,50,30,0.14)]"
-      />
+
+      {/* Слой с абсолютным позиционированием: силуэт не растягивает
+          контейнер с aspect-ratio (иначе карточка становится выше 4:3). */}
+      <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-[7%]">
+        <PatternSilhouette
+          slug={slug}
+          className="h-full w-auto max-w-full drop-shadow-[0_12px_22px_rgba(80,50,30,0.14)]"
+        />
+      </div>
     </div>
   );
 }

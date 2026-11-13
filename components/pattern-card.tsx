@@ -30,7 +30,7 @@ export function PatternCard({
         href={`/patterns/${pattern.slug}`}
         className="group flex h-full flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <div className="relative aspect-[4/3]">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <PatternCover
             slug={pattern.slug}
             coverUrl={pattern.coverUrl}
