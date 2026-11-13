@@ -172,6 +172,9 @@ export default async function PatternPage({ params }: PatternPageProps) {
           </div>
 
           <PatternConfigurator
+            patternId={pattern.id}
+            slug={pattern.slug}
+            title={pattern.title}
             sizes={pattern.sizes}
             params={pattern.params}
             price={pattern.price}

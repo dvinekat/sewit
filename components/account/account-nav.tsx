@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   { href: "/account", label: "Обзор" },
   { href: "/account/favorites", label: "Избранное" },
+  { href: "/account/orders", label: "Заказы" },
 ];
 
 /** Навигация кабинета с активным разделом (T-07). */

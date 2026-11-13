@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/guards";
 import { countFavorites } from "@/lib/favorites";
-import { formatPatternCount } from "@/lib/format";
+import { formatPatternCount, pluralizeRu } from "@/lib/format";
+import { listMyOrders } from "@/lib/orders/queries";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -45,13 +46,14 @@ export default async function AccountPage({
   const user = await requireUser("/account");
   const supabase = await createClient();
 
-  const [{ data: measurements }, favorites] = await Promise.all([
+  const [{ data: measurements }, favorites, orders] = await Promise.all([
     supabase
       .from("measurements")
       .select("bust, waist, hips, height, updated_at")
       .eq("user_id", user.id)
       .maybeSingle<MeasurementRow>(),
     countFavorites(),
+    listMyOrders(),
   ]);
 
   const noticeKey = params.welcome
@@ -184,17 +186,26 @@ export default async function AccountPage({
             Заказы и библиотека
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Здесь появятся история покупок и скачивание лекал: после демо-оплаты заказ и PDF сразу
-            станут доступны.
+            {orders.length > 0
+              ? `${orders.length} ${pluralizeRu(orders.length, "заказ", "заказа", "заказов")}, последний — ${orders[0]!.number}. История и состав доступны в разделе заказов.`
+              : "Здесь появятся история покупок и скачивание лекал: после демо-оплаты заказ сразу станет доступен."}
           </p>
-          {user.role === "admin" ? (
+          <div className="mt-4 flex flex-wrap gap-3">
             <Link
-              href="/admin"
-              className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-4")}
+              href="/account/orders"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             >
-              Перейти в админку
+              История заказов
             </Link>
-          ) : null}
+            {user.role === "admin" ? (
+              <Link
+                href="/admin"
+                className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+              >
+                Перейти в админку
+              </Link>
+            ) : null}
+          </div>
         </section>
       </div>
     </div>

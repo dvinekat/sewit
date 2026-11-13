@@ -1,9 +1,12 @@
 "use client";
 
+import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
+import { useCart } from "@/lib/cart/store";
 import { formatFabricConsumption, formatPrice } from "@/lib/format";
 import type { ParamCode, PatternParam, PatternSize } from "@/lib/pattern-domain";
+import { cartItemKey } from "@/lib/pricing";
 import { validateVariantSelection, variantTitle, type VariantSelection } from "@/lib/variant";
 import { cn } from "@/lib/utils";
 
@@ -29,25 +32,50 @@ function defaultSelection(params: readonly PatternParam[]): VariantSelection {
  * параметров не рендерится; недоступные значения помечены «в разработке».
  */
 export function PatternConfigurator({
+  patternId,
+  slug,
+  title,
   sizes,
   params,
   price,
 }: {
+  patternId: string;
+  slug: string;
+  title: string;
   sizes: PatternSize[];
   params: PatternParam[];
   price: number;
 }) {
   const [sizeLabel, setSizeLabel] = useState(sizes[1]?.label ?? sizes[0]?.label ?? "");
   const [selection, setSelection] = useState<VariantSelection>(() => defaultSelection(params));
+  const items = useCart((state) => state.items);
+  const hydrated = useCart((state) => state.hydrated);
+  const addItem = useCart((state) => state.addItem);
 
   const active = sizes.find((size) => size.label === sizeLabel) ?? sizes[0];
   if (!active) return null;
 
   const validation = validateVariantSelection(selection, params);
-  const title = variantTitle(selection, params);
+  const variantName = variantTitle(selection, params);
+  const itemKey = cartItemKey(patternId, active.label, validation.normalized);
+  const inCart = hydrated && items.some((item) => item.key === itemKey);
 
   function chooseValue(code: ParamCode, value: string) {
     setSelection((current) => ({ ...current, [code]: value }));
+  }
+
+  function addToCart() {
+    addItem({
+      key: itemKey,
+      patternId,
+      slug,
+      title,
+      price,
+      sizeLabel: active.label,
+      variantKey: validation.normalized,
+      variantTitle: variantName,
+      selection: { ...selection },
+    });
   }
 
   return (
@@ -193,7 +221,7 @@ export function PatternConfigurator({
         </div>
         <div>
           <dt className="text-xs text-muted-foreground">Вариант</dt>
-          <dd className="mt-0.5 font-medium">{title}</dd>
+          <dd className="mt-0.5 font-medium">{variantName}</dd>
         </div>
         <div>
           <dt className="text-xs text-muted-foreground">Цена</dt>
@@ -201,9 +229,27 @@ export function PatternConfigurator({
         </div>
       </dl>
 
+      <button
+        type="button"
+        onClick={addToCart}
+        disabled={!hydrated || inCart || !validation.ok}
+        className={cn(
+          "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:opacity-60",
+        )}
+      >
+        <ShoppingBag aria-hidden="true" className="size-4" />
+        {!hydrated ? "Загружаем корзину…" : inCart ? "В корзине" : "В корзину"}
+      </button>
+
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        {inCart
+          ? "Размер и параметры этой позиции уже в корзине. Изменить их можно в корзине."
+          : "Гость сможет войти при оформлении — позиция сохранится."}
+      </p>
+
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-        Состав набора: лекала PDF A4 на размер {active.label}, вариант «{title}» и памятка по печати
-        без масштабирования. Цена на MVP одинакова для всех комбинаций; если файла под точный
+        Состав набора: лекала PDF A4 на размер {active.label}, вариант «{variantName}» и памятка по
+        печати без масштабирования. Цена на MVP одинакова для всех комбинаций; если файла под точный
         вариант нет, выдаётся ближайший доступный.
       </p>
 

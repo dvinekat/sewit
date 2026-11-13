@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { Logo } from "@/components/logo";
 import { AccountMenu } from "@/components/account/account-menu";
+import { CartBadge } from "@/components/cart/cart-badge";
+import { Logo } from "@/components/logo";
 
 const NAV = [
   { href: "/catalog", label: "Каталог" },
@@ -33,6 +34,7 @@ export function SiteHeader() {
           >
             Каталог
           </Link>
+          <CartBadge />
           <AccountMenu />
         </div>
       </div>
