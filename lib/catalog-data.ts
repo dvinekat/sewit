@@ -5,7 +5,7 @@ import type {
   PatternParam,
   PatternParamValue,
   PatternSize,
-} from "./patterns";
+} from "./pattern-domain";
 
 /**
  * Каталог SewIt: модели, категории, размеры и параметры.

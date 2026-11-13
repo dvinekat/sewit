@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { catalogHref } from "@/lib/catalog";
+import { catalogHref, type CatalogQuery } from "@/lib/catalog";
 import type { CategorySlug, CategoryWithCount } from "@/lib/patterns";
 import { cn } from "@/lib/utils";
 
@@ -8,16 +8,18 @@ import { cn } from "@/lib/utils";
 export function CategoryNav({
   categories,
   activeSlug,
+  query,
 }: {
   categories: CategoryWithCount[];
   activeSlug?: CategorySlug;
+  query?: CatalogQuery;
 }) {
   const total = categories.reduce((sum, category) => sum + category.patternCount, 0);
 
   return (
     <nav aria-label="Категории выкроек" className="flex flex-wrap gap-2">
       <Link
-        href={catalogHref()}
+        href={catalogHref({ ...query, category: undefined })}
         aria-current={activeSlug ? undefined : "page"}
         className={cn(
           "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
@@ -36,7 +38,7 @@ export function CategoryNav({
         return (
           <Link
             key={category.slug}
-            href={catalogHref(category.slug)}
+            href={catalogHref({ ...query, category: category.slug })}
             aria-current={active ? "page" : undefined}
             className={cn(
               "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
