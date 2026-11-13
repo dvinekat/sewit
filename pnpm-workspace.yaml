@@ -1,0 +1,13 @@
+packages:
+  - "."
+
+allowBuilds:
+  esbuild: true
+
+# Windows + Turbopack: изолированный node-linker pnpm создаёт junction-ссылки,
+# которые Next.js 16 не резолвит при сборке («Could not find next/package.json»).
+# Плоский node_modules воспроизводит npm-раскладку и оставляет lockfile pnpm.
+nodeLinker: hoisted
+
+# Не переустанавливать зависимости перед каждым pnpm run: install проверяется отдельно.
+verifyDepsBeforeRun: false

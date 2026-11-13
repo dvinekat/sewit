@@ -1,0 +1,11 @@
+.next/
+node_modules/
+coverage/
+pnpm-lock.yaml
+
+# Согласованные документы не переформатируем автоматически.
+README.md
+doc/
+public/
+*.png
+scripts/*.py
