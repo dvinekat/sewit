@@ -3,7 +3,7 @@
 -- Скрипт идемпотентен: повторный запуск обновляет данные, а не дублирует их.
 --
 -- Каталог совпадает с README 9: 5 категорий, 6 опубликованных моделей + 1 черновик,
--- размеры 42/46/50, параметры пресетов, промокод SEWIT10.
+-- размеры 42/46/48/50, параметры пресетов, промокод SEWIT10.
 -- Пути в pattern_files — заглушки: реальные PDF появятся в T-C01/T-C02 и должны
 -- лежать в приватном бакете `patterns` ровно по этим путям.
 
@@ -198,24 +198,31 @@ from (
   values
     ('dress-shirt', '42', 84, 66, 92, 158, 168, 2.20),
     ('dress-shirt', '46', 92, 74, 100, 160, 170, 2.50),
+    ('dress-shirt', '48', 96, 78, 104, 161, 171, 2.65),
     ('dress-shirt', '50', 100, 82, 108, 162, 172, 2.80),
     ('skirt-slit', '42', 84, 66, 92, 158, 168, 1.10),
     ('skirt-slit', '46', 92, 74, 100, 160, 170, 1.20),
+    ('skirt-slit', '48', 96, 78, 104, 161, 171, 1.30),
     ('skirt-slit', '50', 100, 82, 108, 162, 172, 1.40),
     ('trousers-palazzo', '42', 84, 66, 92, 158, 168, 2.40),
     ('trousers-palazzo', '46', 92, 74, 100, 160, 170, 2.60),
+    ('trousers-palazzo', '48', 96, 78, 104, 161, 171, 2.75),
     ('trousers-palazzo', '50', 100, 82, 108, 162, 172, 2.90),
     ('top-puff', '42', 84, 66, 92, 158, 168, 1.00),
     ('top-puff', '46', 92, 74, 100, 160, 170, 1.10),
+    ('top-puff', '48', 96, 78, 104, 161, 171, 1.15),
     ('top-puff', '50', 100, 82, 108, 162, 172, 1.20),
     ('hoodie-oversize', '42', 84, 66, 92, 158, 168, 2.00),
     ('hoodie-oversize', '46', 92, 74, 100, 160, 170, 2.20),
+    ('hoodie-oversize', '48', 96, 78, 104, 161, 171, 2.35),
     ('hoodie-oversize', '50', 100, 82, 108, 162, 172, 2.50),
     ('slip-dress', '42', 84, 66, 92, 158, 168, 1.60),
     ('slip-dress', '46', 92, 74, 100, 160, 170, 1.80),
+    ('slip-dress', '48', 96, 78, 104, 161, 171, 1.90),
     ('slip-dress', '50', 100, 82, 108, 162, 172, 2.00),
     ('dress-back', '42', 84, 66, 92, 158, 168, 1.90),
     ('dress-back', '46', 92, 74, 100, 160, 170, 2.10),
+    ('dress-back', '48', 96, 78, 104, 161, 171, 2.25),
     ('dress-back', '50', 100, 82, 108, 162, 172, 2.40)
 ) as v(slug, label, bust, waist, hips, height_min, height_max, fabric_consumption_m)
 join public.patterns p on p.slug = v.slug
@@ -245,7 +252,7 @@ from (
     ('hoodie-oversize', 'length', 'Длина', '[{"value":"cropped","title":"Укороченная","available":true},{"value":"regular","title":"Стандартная","available":true}]'),
     ('hoodie-oversize', 'sleeve', 'Рукав', '[{"value":"short","title":"Короткий","available":true},{"value":"long","title":"Длинный","available":true}]'),
     ('slip-dress', 'length', 'Длина', '[{"value":"midi","title":"Midi","available":true},{"value":"maxi","title":"Maxi","available":true}]'),
-    ('slip-dress', 'neckline', 'Вырез', '[{"value":"v","title":"V-образный","available":true},{"value":"boat","title":"Лодочка","available":true}]'),
+    ('slip-dress', 'neckline', 'Вырез', '[{"value":"v","title":"V-образный","available":true},{"value":"boat","title":"Лодочка","available":false}]'),
     ('dress-back', 'length', 'Длина', '[{"value":"midi","title":"Midi","available":true},{"value":"maxi","title":"Maxi","available":true}]')
 ) as v(slug, code, title, payload)
 join public.patterns p on p.slug = v.slug

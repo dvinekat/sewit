@@ -39,6 +39,10 @@ describe("разбор URL-состояния каталога", () => {
     });
   });
 
+  it("принимает новый размер 48", () => {
+    expect(parseCatalogQuery({ size: "48" })).toEqual({ size: "48", sort: "new" });
+  });
+
   it("игнорирует мусор и слишком короткий поиск", () => {
     expect(
       parseCatalogQuery({

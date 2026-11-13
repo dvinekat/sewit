@@ -28,8 +28,14 @@ describe("рекомендация размера", () => {
     const result = fitSize(demo, sizes, "shoulder");
 
     expect(result.recommended.label).toBe("46");
-    expect(result.alternatives.map((size) => size.label)).toEqual(["42", "50"]);
+    expect(result.alternatives.map((size) => size.label)).toEqual(["42", "48"]);
     expect(result.warnings.map((warning) => warning.code)).toContain("borderline");
+  });
+
+  it("мерки 96/78/104 попадают в новый размер 48", () => {
+    const result = fitSize({ bust: 96, waist: 78, hips: 104, height: 166 }, sizes, "shoulder");
+
+    expect(result.recommended.label).toBe("48");
   });
 
   it("точное попадание в 50 не считается пограничным", () => {

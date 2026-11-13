@@ -13,7 +13,7 @@ import {
  * неизвестное значение просто игнорируется.
  */
 
-export const CATALOG_SIZES = ["42", "46", "50"] as const;
+export const CATALOG_SIZES = ["42", "46", "48", "50"] as const;
 export type CatalogSize = (typeof CATALOG_SIZES)[number];
 
 export const CATALOG_SORTS = ["new", "popular", "price-asc", "price-desc"] as const;
