@@ -24,8 +24,11 @@ import {
 
 export * from "./pattern-domain";
 
-/** Вложенные связи PostgREST: категория, размеры и параметры одной выкройки. */
-const PATTERN_SELECT = `
+/**
+ * Вложенные связи PostgREST: категория, размеры и параметры одной выкройки.
+ * Экспортируется, чтобы избранное (T-16) собирало карточки тем же маппером.
+ */
+export const PATTERN_SELECT = `
   id, slug, title, description, level, sewing_hours, fabric_note, materials, allowances,
   price, cover_url, model_3d_url, status, sales_count, created_at, published_at,
   category:categories!inner (slug),

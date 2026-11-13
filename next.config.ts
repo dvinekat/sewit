@@ -14,6 +14,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Отдельная папка сборки нужна для проверки production-сборки, пока запущен dev.
+  distDir: process.env.SEWIT_DIST_DIR ?? ".next",
   images: {
     // Обложки лежат в публичном бакете `covers` проекта Supabase (README 8.7).
     remotePatterns: [

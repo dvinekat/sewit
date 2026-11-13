@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/catalog", label: "Каталог выкроек" },
   { href: "/#how-it-works", label: "Как это работает" },
   { href: "/#about", label: "О SewIt" },
+  { href: "/legal/privacy", label: "Политика ПД" },
 ];
 
 const CUSTOMER_INFO = [
