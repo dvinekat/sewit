@@ -23,7 +23,7 @@ export function BrowserCheck() {
 
     async function run() {
       if (!hasSupabaseEnv()) {
-        setState({ status: "error", message: "Нет NEXT_PUBLIC_SUPABASE_URL / ANON_KEY" });
+        setState({ status: "error", message: "Подключение к базе данных не настроено." });
         return;
       }
 

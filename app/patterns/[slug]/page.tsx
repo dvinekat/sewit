@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PatternCover } from "@/components/pattern-cover";
+import { SizeFitSection } from "@/components/pattern/size-fit-section";
 import { SizePanel } from "@/components/pattern/size-panel";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatSewingHours, getLevelLabel } from "@/lib/format";
@@ -156,10 +157,21 @@ export default async function PatternPage({ params }: PatternPageProps) {
               Лекала уже с припусками. После покупки выкройка появится в личном кабинете, а PDF
               можно будет скачать и распечатать на A4.
             </p>
+
+            <a
+              href="#size-fit"
+              className="mt-3 block text-center text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+            >
+              Не знаете размер? Подберите по меркам
+            </a>
           </div>
 
           <SizePanel sizes={pattern.sizes} />
         </aside>
+      </div>
+
+      <div className="mt-12">
+        <SizeFitSection sizes={pattern.sizes} categorySlug={pattern.categorySlug} />
       </div>
     </div>
   );

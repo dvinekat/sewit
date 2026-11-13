@@ -12,3 +12,6 @@ scripts/*.py
 
 # SQL-миграции и сид форматируются вручную: Prettier не умеет SQL.
 supabase/
+
+# Next.js сам переписывает tsconfig при сборке — не форматируем его.
+tsconfig.json

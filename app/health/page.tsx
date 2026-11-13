@@ -7,19 +7,19 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Проверка Supabase",
+  title: "Состояние сервиса",
   robots: { index: false, follow: false },
 };
 
 type CheckResult =
   { ok: true; categories: number; patterns: number } | { ok: false; message: string };
 
-/** Чтение БД на сервере (T-02): анонимный клиент, поэтому видны только опубликованные. */
+/** Диагностика каталога: проверяем, что данные читаются на сервере. */
 async function checkOnServer(): Promise<CheckResult> {
   if (!hasSupabaseEnv()) {
     return {
       ok: false,
-      message: "Не заданы NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      message: "Подключение к базе данных не настроено.",
     };
   }
 
@@ -47,14 +47,11 @@ export default async function HealthPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-        Служебная страница
+        Состояние сервиса
       </p>
-      <h1 className="mt-2 font-display text-3xl tracking-tight">Проверка Supabase</h1>
+      <h1 className="mt-2 font-display text-3xl tracking-tight">Проверка каталога</h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-        Страница подтверждает T-02: приложение читает базу и на сервере, и в браузере. Если ниже
-        ошибка «Could not find the table», значит миграция ещё не применена — запустите SQL из
-        <code className="mx-1 rounded bg-secondary px-1.5 py-0.5 text-xs">supabase/migrations</code>
-        .
+        Страница показывает, что каталог доступен и данные загружаются и на сервере, и в браузере.
       </p>
 
       <div className="mt-8 grid gap-4">
@@ -67,7 +64,7 @@ export default async function HealthPage() {
           {server.ok ? (
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <Metric label="Категорий" value={server.categories} />
-              <Metric label="Опубликованных выкроек" value={server.patterns} />
+              <Metric label="Выкроек в каталоге" value={server.patterns} />
             </dl>
           ) : (
             <p className="mt-3 text-sm leading-relaxed text-destructive">{server.message}</p>
@@ -78,8 +75,7 @@ export default async function HealthPage() {
       </div>
 
       <p className="mt-6 text-sm text-muted-foreground">
-        Ожидаемые значения после сида: 5 категорий и 6 выкроек. Седьмая — черновик, анонимному ключу
-        она недоступна благодаря RLS.
+        Если данные не загружаются, проверьте подключение к базе и обновите страницу.
       </p>
 
       <Link
