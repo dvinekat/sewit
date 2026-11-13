@@ -1,0 +1,86 @@
+# ─────────────────────────────── Node.js / pnpm ───────────────────────────────
+node_modules/
+.pnpm-store/
+.pnp
+.pnp.*
+.yarn/
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/versions
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# ─────────────────────────────── Next.js ───────────────────────────────
+.next/
+out/
+build/
+dist/
+next-env.d.ts
+*.tsbuildinfo
+
+# ─────────────────────────────── Supabase ───────────────────────────────
+supabase/.branches/
+supabase/.temp/
+supabase/.env
+supabase/.env.*
+supabase/.dump/
+*.dump
+
+# ─────────────────────────────── Vercel ───────────────────────────────
+.vercel/
+
+# ─────────────────────────────── Переменные окружения ───────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─────────────────────────────── Тесты и покрытие ───────────────────────────────
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# ─────────────────────────────── Кэши и временные файлы ───────────────────────────────
+.cache/
+.eslintcache
+.stylelintcache
+.turbo/
+.swc/
+*.log
+*.tmp
+*.bak
+logs/
+
+# ─────────────────────────────── Windows ───────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.stackdump
+*.~vs*
+
+# ─────────────────────────────── IDE ───────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+
+# ─────────────────────────────── macOS (на случай кросс-платформы) ───────────────────────────────
+.DS_Store
+
+# ─────────────────────────────── Явно НЕ игнорируем ───────────────────────────────
+# README.md, doc/ и исходные материалы 1.png–4.png версионируются как часть ТЗ.
+# Шаблоны выше их не затрагивают; исключения добавлять не нужно.
