@@ -94,16 +94,16 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </section>
 
       <p className="rounded-2xl border border-line bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
-        Это демонстрационный заказ: деньги не списывались. Скачивание лекал появится в библиотеке
-        после следующего обновления.
+        Это демонстрационный заказ: деньги не списывались. Лекала с титульным листом доступны в
+        разделе «Мои выкройки».
       </p>
 
       <div className="flex flex-wrap gap-3">
-        <Link href="/account/orders" className={cn(buttonVariants({ variant: "outline" }))}>
-          Все заказы
+        <Link href="/account/library" className={cn(buttonVariants({ variant: "outline" }))}>
+          Мои выкройки
         </Link>
-        <Link href="/catalog" className={cn(buttonVariants({ variant: "ghost" }))}>
-          В каталог
+        <Link href="/account/orders" className={cn(buttonVariants({ variant: "ghost" }))}>
+          Все заказы
         </Link>
       </div>
     </div>

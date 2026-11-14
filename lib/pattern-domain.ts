@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Доменный слой каталога: типы и чистые функции без доступа к БД и Next.js.
  *
  * Здесь нет `next/headers` и Supabase, поэтому модуль можно импортировать в тестах
@@ -146,7 +146,7 @@ function toLevel(value: number | string): PatternLevel {
   return level as PatternLevel;
 }
 
-function parseParamValues(raw: unknown): PatternParamValue[] {
+export function parsePatternParamValues(raw: unknown): PatternParamValue[] {
   if (!Array.isArray(raw)) return [];
 
   return raw.flatMap((item) => {
@@ -211,7 +211,7 @@ export function mapPatternRow(row: PatternRow): Pattern {
       .map((param) => ({
         code: param.code as ParamCode,
         title: param.title,
-        values: parseParamValues(param.values),
+        values: parsePatternParamValues(param.values),
       })),
   };
 }

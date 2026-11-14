@@ -197,11 +197,14 @@ export default async function AccountPage({
             >
               История заказов
             </Link>
+            <Link
+              href="/account/library"
+              className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
+            >
+              Мои выкройки
+            </Link>
             {user.role === "admin" ? (
-              <Link
-                href="/admin"
-                className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
-              >
+              <Link href="/admin" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
                 Перейти в админку
               </Link>
             ) : null}

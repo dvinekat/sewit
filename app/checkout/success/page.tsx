@@ -108,8 +108,8 @@ export default async function CheckoutSuccessPage({
       </div>
 
       <p className="mt-4 rounded-2xl border border-line bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground">
-        Заказ сохранён в истории покупок. Скачивание PDF и библиотека появятся в кабинете на
-        следующем шаге — данные для них уже созданы.
+        Заказ сохранён в истории покупок. PDF с титульным листом уже доступен в разделе «Мои
+        выкройки» — скачивание можно повторять без ограничений.
       </p>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">

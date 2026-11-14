@@ -1,4 +1,4 @@
-﻿# SewIt — онлайн-сервис готовых выкроек с персональной кастомизацией
+# SewIt — онлайн-сервис готовых выкроек с персональной кастомизацией
 
 **Документ:** техническое задание (README) · **Версия:** 1.0 · **Дата:** 13.11.2026
 **Статус:** согласовано по итогам 3 сессий уточнения (15 вопросов)
@@ -439,6 +439,7 @@ corepack enable
 pnpm install --frozen-lockfile
 supabase start        # Postgres, Auth, Storage, Studio в Docker
 supabase db reset     # миграции из supabase/migrations + seed.sql
+pnpm pdf:demo         # демо-лекала в Storage; нужен SUPABASE_SERVICE_ROLE_KEY
 pnpm dev              # http://localhost:3000
 pnpm lint; pnpm typecheck; pnpm test
 ```

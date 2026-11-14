@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
     // В обычном окружении (CI, локальная машина) флаг не выставлен и сборка типизируется.
     ignoreBuildErrors: process.env.SEWIT_SKIP_BUILD_TYPECHECK === "1",
   },
+  // Шрифт для титульного листа PDF должен попасть в serverless-бандл route.
+  outputFileTracingIncludes: {
+    "/api/download/**": ["./assets/fonts/**/*"],
+  },
   experimental: {
     // Сборка страниц в worker_threads вместо дочерних процессов: меньше накладных
     // расходов и совместимость с песочницами, где spawn с pipe запрещён.
