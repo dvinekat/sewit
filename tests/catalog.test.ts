@@ -46,7 +46,7 @@ describe("разбор URL-состояния каталога", () => {
   it("игнорирует мусор и слишком короткий поиск", () => {
     expect(
       parseCatalogQuery({
-        category: "shoes",
+        category: "Обувь",
         size: "44",
         level: "9",
         price: "cheap",
@@ -54,6 +54,13 @@ describe("разбор URL-состояния каталога", () => {
         q: "п",
       }),
     ).toEqual({ sort: "new" });
+  });
+
+  it("принимает slug категории, созданной администратором", () => {
+    expect(parseCatalogQuery({ category: "dresses-kids" })).toEqual({
+      category: "dresses-kids",
+      sort: "new",
+    });
   });
 
   it("берёт первое значение из массива", () => {

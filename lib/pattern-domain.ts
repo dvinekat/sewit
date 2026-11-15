@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Доменный слой каталога: типы и чистые функции без доступа к БД и Next.js.
  *
  * Здесь нет `next/headers` и Supabase, поэтому модуль можно импортировать в тестах
@@ -7,7 +7,12 @@
 
 export const CATEGORY_SLUGS = ["dresses", "skirts", "trousers", "tops", "outerwear"] as const;
 
-export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
+/**
+ * Slug категории. Пять базовых значений задают подписи и описания по умолчанию,
+ * но администратор может создать свою категорию (T-40): её slug хранится в БД,
+ * а карточка и каталог работают с ним через запасные подписи.
+ */
+export type CategorySlug = string;
 export type PatternLevel = 1 | 2 | 3 | 4 | 5;
 export type PatternStatus = "draft" | "published";
 export type ParamCode = "length" | "sleeve" | "neckline" | "fit";
@@ -73,7 +78,7 @@ export interface Pattern {
 }
 
 /** Подписи категорий: в БД (README 5) хранятся только slug и title. */
-export const CATEGORY_TITLES: Record<CategorySlug, string> = {
+export const CATEGORY_TITLES: Record<string, string> = {
   dresses: "Платья",
   skirts: "Юбки",
   trousers: "Брюки",
@@ -82,13 +87,16 @@ export const CATEGORY_TITLES: Record<CategorySlug, string> = {
 };
 
 /** Описания категорий для шапки каталога: в БД (README 5) их нет. */
-export const CATEGORY_DESCRIPTIONS: Record<CategorySlug, string> = {
+export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   dresses: "От платья-рубашки до комбинации — на каждый день и для выхода.",
   skirts: "Прямые, расклешённые и с разрезом — база гардероба.",
   trousers: "Свободные палаццо и модели с посадкой по фигуре.",
   tops: "Лёгкие топы и блузы, которые шьются за вечер.",
   outerwear: "Худи и лёгкая верхняя одежда оверсайз.",
 };
+
+/** Описание категории, созданной в админке: своего текста у неё пока нет. */
+export const DEFAULT_CATEGORY_DESCRIPTION = "Выкройки этой категории SewIt.";
 
 const PARAM_ORDER: ParamCode[] = ["length", "sleeve", "neckline", "fit"];
 
@@ -132,8 +140,11 @@ export interface PatternParamRow {
   values: unknown;
 }
 
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Проверка slug категории из URL: подходит и категория, созданная в админке. */
 export function isCategorySlug(value: string): value is CategorySlug {
-  return (CATEGORY_SLUGS as readonly string[]).includes(value);
+  return value.length >= 2 && value.length <= 40 && SLUG_PATTERN.test(value);
 }
 
 function toNumber(value: number | string, fallback = 0): number {
@@ -161,14 +172,14 @@ export function parsePatternParamValues(raw: unknown): PatternParamValue[] {
 
 /**
  * Преобразует строку PostgREST в доменную модель (T-04).
- * @throws если у выкройки нет категории или она неизвестна — лучше упасть, чем
- * показать карточку с пустой категорией.
+ * @throws если у выкройки нет категории — лучше упасть, чем показать карточку
+ * с пустой категорией. Незнакомый slug допустим: категорию мог создать админ (T-40).
  */
 export function mapPatternRow(row: PatternRow): Pattern {
   const categorySlug = row.category?.slug;
 
-  if (!categorySlug || !isCategorySlug(categorySlug)) {
-    throw new Error(`У выкройки «${row.slug}» неизвестная категория: ${categorySlug ?? "—"}`);
+  if (!categorySlug) {
+    throw new Error(`У выкройки «${row.slug}» не указана категория`);
   }
 
   return {

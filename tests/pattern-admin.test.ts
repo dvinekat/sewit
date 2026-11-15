@@ -35,6 +35,7 @@ const validForm = {
   allowances: "Припуск 1,5 см по всем срезам",
   status: "draft",
   coverUrl: "",
+  model3dUrl: "",
   sizes: JSON.stringify([sizeRow()]),
   params: JSON.stringify([
     { code: "length", title: "Длина", values: [{ value: "midi", title: "Миди", available: true }] },
@@ -198,6 +199,20 @@ describe("схема формы выкройки", () => {
     expect(
       patternCreateSchema.parse({ ...validForm, coverUrl: "https://example.com/a.jpg" }).coverUrl,
     ).toBe("https://example.com/a.jpg");
+  });
+
+  it("проверяет URL 3D-модели и допускает его отсутствие", () => {
+    expect(patternCreateSchema.parse(validForm).model3dUrl).toBeNull();
+    expect(
+      patternCreateSchema.safeParse({ ...validForm, model3dUrl: "ftp://example.com/m.glb" })
+        .success,
+    ).toBe(false);
+    expect(
+      patternCreateSchema.parse({
+        ...validForm,
+        model3dUrl: "https://example.com/models/m.glb",
+      }).model3dUrl,
+    ).toBe("https://example.com/models/m.glb");
   });
 
   it("для обновления требует uuid", () => {

@@ -92,8 +92,11 @@ describe("маппинг строки PostgREST", () => {
     expect(length?.values.find((value) => value.value === "maxi")?.available).toBe(true);
   });
 
-  it("падает на неизвестной категории вместо карточки с пустой категорией", () => {
-    expect(() => mapPatternRow({ ...row, category: { slug: "shoes" } })).toThrow(/категория/i);
+  it("принимает категорию, созданную в админке, и падает без категории", () => {
+    expect(mapPatternRow({ ...row, category: { slug: "dresses-kids" } }).categorySlug).toBe(
+      "dresses-kids",
+    );
+    expect(() => mapPatternRow({ ...row, category: null })).toThrow(/категори/i);
   });
 });
 

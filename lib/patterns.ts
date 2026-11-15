@@ -4,7 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 
 import {
   CATEGORY_DESCRIPTIONS,
-  isCategorySlug,
+  DEFAULT_CATEGORY_DESCRIPTION,
   mapPatternRow,
   sortByPopularity,
   type CategorySlug,
@@ -108,18 +108,18 @@ export async function listCategoriesWithCounts(): Promise<CategoryWithCount[]> {
       counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1);
     }
 
-    return ((categoriesResult.data ?? []) as { id: string; slug: string; title: string }[])
-      .filter((row) => isCategorySlug(row.slug))
-      .map((row) => {
-        const slug = row.slug as CategorySlug;
+    return ((categoriesResult.data ?? []) as { id: string; slug: string; title: string }[]).map(
+      (row) => {
+        const slug = row.slug;
 
         return {
           slug,
           title: row.title,
-          description: CATEGORY_DESCRIPTIONS[slug],
+          description: CATEGORY_DESCRIPTIONS[slug] ?? DEFAULT_CATEGORY_DESCRIPTION,
           patternCount: counts.get(row.id) ?? 0,
         };
-      });
+      },
+    );
   } catch (error) {
     return failRead<CategoryWithCount>("категории", error);
   }

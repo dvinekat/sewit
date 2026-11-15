@@ -45,6 +45,8 @@ export interface AdminPatternDetails extends AdminPatternListItem {
   fabricNote: string;
   materials: string[];
   allowances: string;
+  /** .glb из бакета `models`; null — 3D не загружено. */
+  model3dUrl: string | null;
   sizes: SizeRowInput[];
   params: ParamRowInput[];
   /** Сколько размеров уже с PDF: для подсказки и проверки публикации. */
@@ -163,6 +165,7 @@ interface PatternDetailsRow extends PatternRow {
   materials: string[] | null;
   allowances: string;
   category_id: string;
+  model_3d_url: string | null;
   sizes: {
     id: string;
     label: string;
@@ -182,7 +185,8 @@ export async function getAdminPattern(id: string): Promise<AdminPatternDetails |
     .from("patterns")
     .select(
       `id, slug, title, description, category_id, level, sewing_hours, fabric_note, materials,
-       allowances, price, cover_url, status, sales_count, created_at, category:categories (title),
+       allowances, price, cover_url, model_3d_url, status, sales_count, created_at,
+       category:categories (title),
        sizes:pattern_sizes (id, label, bust, waist, hips, height_min, height_max, fabric_consumption_m),
        params:pattern_params (code, title, values)`,
     )
@@ -237,6 +241,7 @@ export async function getAdminPattern(id: string): Promise<AdminPatternDetails |
     status: data.status,
     price: Number(data.price),
     coverUrl: data.cover_url,
+    model3dUrl: data.model_3d_url,
     salesCount: Number(data.sales_count),
     categoryTitle: data.category?.title ?? "—",
     createdAt: data.created_at,
@@ -270,6 +275,7 @@ export function emptyPatternFormValues(categoryId: string) {
     allowances: "",
     status: "draft" as const,
     coverUrl: "",
+    model3dUrl: "",
     sizes: [] as SizeRowInput[],
     params: [] as ParamRowInput[],
   };
@@ -291,6 +297,7 @@ export function patternFormValues(pattern: AdminPatternDetails) {
     allowances: pattern.allowances,
     status: pattern.status === "published" ? ("published" as const) : ("draft" as const),
     coverUrl: pattern.coverUrl ?? "",
+    model3dUrl: pattern.model3dUrl ?? "",
     sizes: pattern.sizes,
     params: pattern.params,
   };

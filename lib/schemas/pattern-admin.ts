@@ -188,6 +188,17 @@ export const patternFormSchema = z.object({
       message: "URL обложки: начинается с http(s)://",
     })
     .transform((value) => value || null),
+  model3dUrl: z.preprocess(
+    (value) => (typeof value === "string" ? value : ""),
+    z
+      .string()
+      .trim()
+      .max(500, "URL 3D-модели: максимум 500 символов")
+      .refine((value) => value === "" || /^https?:\/\/\S+$/.test(value), {
+        message: "URL 3D-модели: начинается с http(s)://",
+      })
+      .transform((value) => value || null),
+  ),
   sizes: jsonArrayField(sizesSchema),
   params: jsonArrayField(paramsSchema),
 });
@@ -213,6 +224,7 @@ export const PATTERN_FORM_FIELDS = [
   "allowances",
   "status",
   "coverUrl",
+  "model3dUrl",
   "sizes",
   "params",
 ] as const;

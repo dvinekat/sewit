@@ -31,6 +31,7 @@ export interface PatternFormInitial {
   allowances: string;
   status: "draft" | "published";
   coverUrl: string;
+  model3dUrl: string;
   sizes: SizeRowInput[];
   params: ParamRowInput[];
 }
@@ -388,6 +389,42 @@ export function PatternForm({
               name="cover"
               accept="image/jpeg,image/png,image/webp,image/avif"
               onChange={(event) => setHasCoverFile(Boolean(event.target.files?.length))}
+              className="mt-1.5 block w-full text-sm text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground"
+            />
+          </label>
+        </div>
+      </section>
+
+      <section aria-labelledby="model3d" className="space-y-3">
+        <h2 id="model3d" className="font-display text-xl">
+          3D-модель
+        </h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Необязательно: файл `.glb` до 5 МБ для будущего 3D-вьюера (T-43). Пока карточка показывает
+          обложку; модель хранится в публичном бакете `models` и станет доступна в вьюере.
+        </p>
+
+        {values.model3dUrl ? (
+          <p className="text-xs break-all text-muted-foreground">Текущая: {values.model3dUrl}</p>
+        ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <AuthField
+            name="model3dUrl"
+            label="URL модели"
+            value={values.model3dUrl}
+            onChange={(event) => update("model3dUrl", event.target.value)}
+            placeholder="https://…/models/…glb"
+            hint="Можно вставить ссылку или загрузить файл справа."
+            error={state.fieldErrors?.model3dUrl}
+          />
+
+          <label className="block">
+            <span className="text-sm font-medium text-foreground">Загрузить .glb</span>
+            <input
+              type="file"
+              name="model3d"
+              accept=".glb,model/gltf-binary"
               className="mt-1.5 block w-full text-sm text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground"
             />
           </label>

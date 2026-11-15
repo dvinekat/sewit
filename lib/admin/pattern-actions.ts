@@ -27,9 +27,11 @@ import { createServiceClient, hasServiceRoleKey } from "@/lib/supabase/service";
 
 const MAX_COVER_BYTES = 5 * 1024 * 1024;
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
+const MAX_MODEL_BYTES = 5 * 1024 * 1024;
 
 const COVER_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const PDF_TYPES = ["application/pdf"];
+const MODEL_TYPES = ["model/gltf-binary", "application/octet-stream", ""];
 
 const PATTERN_PATH = "/admin/patterns";
 
@@ -49,6 +51,19 @@ function valuesFrom(formData: FormData): Record<string, FormDataEntryValue> {
 function coverFile(formData: FormData): File | null {
   const value = formData.get("cover");
   return value instanceof File && value.size > 0 ? value : null;
+}
+
+function modelFile(formData: FormData): File | null {
+  const value = formData.get("model3d");
+  return value instanceof File && value.size > 0 ? value : null;
+}
+
+/** Путь файла в публичном бакете по его public URL; null — URL не из Storage. */
+function publicBucketPath(url: string | null, bucket: string): string | null {
+  const marker = `/object/public/${bucket}/`;
+  const index = url?.indexOf(marker) ?? -1;
+
+  return index >= 0 ? decodeURIComponent(url!.slice(index + marker.length)) : null;
 }
 
 /** PDF приходят как `pdf:<label>` — по подписи размера, а не по id строки. */
@@ -174,6 +189,7 @@ async function savePattern(
   }
 
   const cover = coverFile(formData);
+  const model = modelFile(formData);
   const pdfs = pdfFiles(formData);
 
   if (cover) {
@@ -184,6 +200,20 @@ async function savePattern(
     });
 
     if (problem) return { status: "error", message: problem };
+  }
+
+  if (model) {
+    const problem = fileProblem(model, {
+      maxBytes: MAX_MODEL_BYTES,
+      types: MODEL_TYPES,
+      label: "3D-модель",
+    });
+
+    if (problem) return { status: "error", message: problem };
+
+    if (!model.name.toLowerCase().endsWith(".glb")) {
+      return { status: "error", message: "3D-модель: нужен файл формата .glb" };
+    }
   }
 
   for (const [label, file] of pdfs) {
@@ -201,12 +231,13 @@ async function savePattern(
       ? (
           await service
             .from("patterns")
-            .select("id, slug, cover_url, published_at")
+            .select("id, slug, cover_url, model_3d_url, published_at")
             .eq("id", patternIdToUpdate)
             .maybeSingle<{
               id: string;
               slug: string;
               cover_url: string | null;
+              model_3d_url: string | null;
               published_at: string | null;
             }>()
         ).data
@@ -264,6 +295,30 @@ async function savePattern(
     coverUrl = service.storage.from("covers").getPublicUrl(path).data.publicUrl;
   }
 
+  let model3dUrl = values.model3dUrl;
+
+  if (model) {
+    const path = `${values.slug}/model-${Date.now()}.glb`;
+    const upload = await service.storage.from("models").upload(path, model, {
+      contentType: "model/gltf-binary",
+      upsert: true,
+      cacheControl: "31536000",
+    });
+
+    if (upload.error) return serviceError("model upload", upload.error);
+
+    model3dUrl = service.storage.from("models").getPublicUrl(path).data.publicUrl;
+  }
+
+  // Заменённую 3D-модель убираем из Storage: старый URL больше не нужен.
+  const oldModelPath = existingPattern
+    ? publicBucketPath(existingPattern.model_3d_url, "models")
+    : null;
+  if (model && oldModelPath) {
+    const removed = await service.storage.from("models").remove([oldModelPath]);
+    if (removed.error) console.error("[admin/patterns] old model remove", removed.error);
+  }
+
   const payload = {
     slug: values.slug,
     title: values.title,
@@ -276,6 +331,7 @@ async function savePattern(
     allowances: values.allowances,
     price: values.priceRubles,
     cover_url: coverUrl,
+    model_3d_url: model3dUrl,
   };
 
   let patternId: string;
@@ -480,7 +536,11 @@ export async function deletePatternAction(formData: FormData): Promise<void> {
   if ((count ?? 0) > 0) redirect(`${PATTERN_PATH}/${id.data}?error=orders`);
 
   const [{ data: pattern }, { data: files }] = await Promise.all([
-    service.from("patterns").select("slug, cover_url").eq("id", id.data).maybeSingle(),
+    service
+      .from("patterns")
+      .select("slug, cover_url, model_3d_url")
+      .eq("id", id.data)
+      .maybeSingle(),
     service.from("pattern_files").select("storage_path").eq("pattern_id", id.data),
   ]);
 
@@ -490,11 +550,16 @@ export async function deletePatternAction(formData: FormData): Promise<void> {
     if (error) console.error("[admin/patterns] pdf remove", error);
   }
 
-  const coverUrl = pattern?.cover_url ?? null;
-  const coverPath = coverUrl?.split("/object/public/covers/")[1];
+  const coverPath = publicBucketPath(pattern?.cover_url ?? null, "covers");
   if (coverPath) {
-    const { error } = await service.storage.from("covers").remove([decodeURIComponent(coverPath)]);
+    const { error } = await service.storage.from("covers").remove([coverPath]);
     if (error) console.error("[admin/patterns] cover remove", error);
+  }
+
+  const modelPath = publicBucketPath(pattern?.model_3d_url ?? null, "models");
+  if (modelPath) {
+    const { error } = await service.storage.from("models").remove([modelPath]);
+    if (error) console.error("[admin/patterns] model remove", error);
   }
 
   const { error } = await service.from("patterns").delete().eq("id", id.data);
