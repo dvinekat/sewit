@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/admin", label: "Обзор" },
+  { href: "/admin/patterns", label: "Выкройки" },
   { href: "/admin/orders", label: "Заказы" },
   { href: "/admin/promo", label: "Промокоды" },
   { href: "/admin/sales", label: "Сводка продаж" },

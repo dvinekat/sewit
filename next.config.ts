@@ -40,6 +40,9 @@ const nextConfig: NextConfig = {
     // Сборка страниц в worker_threads вместо дочерних процессов: меньше накладных
     // расходов и совместимость с песочницами, где spawn с pipe запрещён.
     workerThreads: true,
+    // Обложка (5 МБ) и PDF лекал (10 МБ) загружаются через server action:
+    // поднимаем лимит тела, иначе Next отклонит форму раньше нашей валидации.
+    serverActions: { bodySizeLimit: "12mb" },
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
