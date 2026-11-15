@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
+import { CookieBanner } from "@/components/legal/cookie-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { site } from "@/lib/site";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           {children}
         </main>
         <SiteFooter />
+        <CookieBanner />
       </body>
     </html>
   );

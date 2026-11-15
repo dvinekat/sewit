@@ -29,7 +29,11 @@ export default async function LibraryPage() {
         <h1 className="font-display text-3xl tracking-tight sm:text-4xl">Мои выкройки</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Купленные лекала с выбранным размером и параметрами. Скачивать можно повторно — PDF
-          формируется с титульным листом заказа.
+          формируется с титульным листом заказа. Перед печатью посмотрите{" "}
+          <Link href="/help/printing" className="text-primary underline-offset-4 hover:underline">
+            памятку по A4
+          </Link>
+          .
         </p>
       </header>
 
@@ -73,6 +77,12 @@ export default async function LibraryPage() {
                 >
                   Скачать PDF
                 </a>
+                <Link
+                  href={`/patterns/${item.slug}/instructions`}
+                  className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  Инструкция пошива
+                </Link>
                 <Link
                   href={`/patterns/${item.slug}`}
                   className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"

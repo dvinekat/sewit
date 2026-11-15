@@ -9,7 +9,7 @@ import { SizeFitSection } from "@/components/pattern/size-fit-section";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatSewingHours, getLevelLabel } from "@/lib/format";
 import { CATEGORY_TITLES } from "@/lib/pattern-domain";
-import { getPatternBySlug, listPublishedPatterns } from "@/lib/patterns";
+import { getPatternBySlug, listCategoriesWithCounts, listPublishedPatterns } from "@/lib/patterns";
 
 export const revalidate = 3600;
 
@@ -48,6 +48,14 @@ export default async function PatternPage({ params }: PatternPageProps) {
   const pattern = await getPatternBySlug(slug);
 
   if (!pattern) notFound();
+
+  // Категорию мог создать администратор (T-40): подпись берём из БД, а не из
+  // захардкоженного списка, иначе бейдж новой категории был бы пустым.
+  const categories = await listCategoriesWithCounts();
+  const categoryTitle =
+    categories.find((category) => category.slug === pattern.categorySlug)?.title ??
+    CATEGORY_TITLES[pattern.categorySlug] ??
+    "Категория";
 
   const sizesRange = `${pattern.sizes[0]?.label ?? "—"}–${pattern.sizes.at(-1)?.label ?? "—"}`;
 
@@ -120,7 +128,7 @@ export default async function PatternPage({ params }: PatternPageProps) {
 
         <aside className="min-w-0 space-y-6 lg:sticky lg:top-24">
           <div className="rounded-3xl border border-line bg-card p-6">
-            <Badge variant="outline">{CATEGORY_TITLES[pattern.categorySlug]}</Badge>
+            <Badge variant="outline">{categoryTitle}</Badge>
 
             <h1 className="mt-3 font-display text-3xl leading-tight tracking-tight text-balance sm:text-4xl">
               {pattern.title}
@@ -169,6 +177,13 @@ export default async function PatternPage({ params }: PatternPageProps) {
             >
               Не знаете размер? Подберите по меркам
             </a>
+
+            <Link
+              href={`/patterns/${pattern.slug}/instructions`}
+              className="mt-3 block text-center text-xs font-medium text-primary underline-offset-4 transition-colors hover:underline"
+            >
+              Инструкция пошива
+            </Link>
           </div>
 
           <PatternConfigurator

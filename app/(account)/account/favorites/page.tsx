@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { listFavoritePatterns } from "@/lib/favorites";
 import { formatPatternCount } from "@/lib/format";
 import { CATEGORY_TITLES } from "@/lib/pattern-domain";
+import { listCategoriesWithCounts } from "@/lib/patterns";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -17,7 +18,11 @@ export const metadata: Metadata = {
 
 export default async function FavoritesPage() {
   await requireUser("/account/favorites");
-  const patterns = await listFavoritePatterns();
+  const [patterns, categories] = await Promise.all([
+    listFavoritePatterns(),
+    listCategoriesWithCounts(),
+  ]);
+  const categoryTitles = new Map(categories.map((category) => [category.slug, category.title]));
 
   return (
     <div className="space-y-6">
@@ -39,7 +44,11 @@ export default async function FavoritesPage() {
             <PatternCard
               key={pattern.id}
               pattern={pattern}
-              categoryTitle={CATEGORY_TITLES[pattern.categorySlug]}
+              categoryTitle={
+                categoryTitles.get(pattern.categorySlug) ??
+                CATEGORY_TITLES[pattern.categorySlug] ??
+                ""
+              }
             />
           ))}
         </div>
