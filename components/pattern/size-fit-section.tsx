@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { deleteMeasurementsAction, saveMeasurementsAction } from "@/lib/measurements/actions";
+import { MEASUREMENT_FIELDS } from "@/lib/measurements/fields";
 import type { CategorySlug, PatternSize } from "@/lib/pattern-domain";
 import {
   fieldErrors,
@@ -15,48 +16,6 @@ import { fitSize, garmentTypeForCategory, type SizeFitResult } from "@/lib/size-
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
-
-const FIELDS: {
-  name: MeasurementsField;
-  label: string;
-  hint: string;
-  placeholder: string;
-  min: number;
-  max: number;
-}[] = [
-  {
-    name: "bust",
-    label: "Обхват груди (ОГ)",
-    hint: "По самой выступающей точке",
-    placeholder: "88",
-    min: 50,
-    max: 200,
-  },
-  {
-    name: "waist",
-    label: "Обхват талии (ОТ)",
-    hint: "По самому узкому месту",
-    placeholder: "70",
-    min: 40,
-    max: 200,
-  },
-  {
-    name: "hips",
-    label: "Обхват бёдер (ОБ)",
-    hint: "По самой широкой точке",
-    placeholder: "96",
-    min: 50,
-    max: 200,
-  },
-  {
-    name: "height",
-    label: "Рост",
-    hint: "Без обуви",
-    placeholder: "168",
-    min: 120,
-    max: 220,
-  },
-];
 
 const EMPTY_VALUES: Record<MeasurementsField, string> = {
   bust: "",
@@ -235,7 +194,7 @@ export function SizeFitSection({
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
         <form onSubmit={handleSubmit} noValidate className="grid gap-4 sm:grid-cols-2">
-          {FIELDS.map((field) => {
+          {MEASUREMENT_FIELDS.map((field) => {
             const error = errors[field.name];
 
             return (

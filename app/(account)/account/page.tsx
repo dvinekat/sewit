@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { DeleteAccount } from "@/components/account/delete-account";
+import { MeasurementsForm } from "@/components/account/measurements-form";
+import { ProfileForm } from "@/components/account/profile-form";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/guards";
 import { countFavorites } from "@/lib/favorites";
 import { formatPatternCount, pluralizeRu } from "@/lib/format";
 import { listMyOrders } from "@/lib/orders/queries";
+import type { MeasurementsValues } from "@/lib/schemas/measurements";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +28,6 @@ interface MeasurementRow {
   updated_at: string;
 }
 
-const measureFormatter = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 1 });
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
   day: "numeric",
   month: "long",
@@ -55,6 +58,15 @@ export default async function AccountPage({
     countFavorites(),
     listMyOrders(),
   ]);
+
+  const savedMeasurements: MeasurementsValues | null = measurements
+    ? {
+        bust: Number(measurements.bust),
+        waist: Number(measurements.waist),
+        hips: Number(measurements.hips),
+        height: Number(measurements.height),
+      }
+    : null;
 
   const noticeKey = params.welcome
     ? "welcome"
@@ -103,11 +115,7 @@ export default async function AccountPage({
             {user.role === "admin" ? <Badge variant="sage">admin</Badge> : null}
           </div>
 
-          <dl className="mt-4 space-y-3 text-sm">
-            <div>
-              <dt className="text-xs text-muted-foreground">Имя</dt>
-              <dd className="mt-0.5 font-medium">{user.name ?? "Не указано"}</dd>
-            </div>
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-xs text-muted-foreground">E-mail</dt>
               <dd className="mt-0.5 break-all font-medium">{user.email}</dd>
@@ -119,6 +127,8 @@ export default async function AccountPage({
               </dd>
             </div>
           </dl>
+
+          <ProfileForm initialName={user.name ?? ""} />
         </section>
 
         <section
@@ -129,33 +139,14 @@ export default async function AccountPage({
             Мерки
           </h2>
 
-          {measurements ? (
-            <>
-              <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                {[
-                  { label: "ОГ", value: measurements.bust },
-                  { label: "ОТ", value: measurements.waist },
-                  { label: "ОБ", value: measurements.hips },
-                  { label: "Рост", value: measurements.height },
-                ].map((item) => (
-                  <div key={item.label}>
-                    <dt className="text-xs text-muted-foreground">{item.label}</dt>
-                    <dd className="mt-0.5 font-display text-xl">
-                      {measureFormatter.format(Number(item.value))} см
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Обновлены {dateFormatter.format(new Date(measurements.updated_at))}.
-              </p>
-            </>
-          ) : (
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Сохранённых мерок пока нет. Подберите размер в карточке выкройки — SewIt подскажет его
-              по ОГ, ОТ, ОБ и росту.
-            </p>
-          )}
+          <MeasurementsForm
+            initial={savedMeasurements}
+            updatedAt={
+              measurements
+                ? `Обновлены ${dateFormatter.format(new Date(measurements.updated_at))}.`
+                : null
+            }
+          />
         </section>
 
         <section
@@ -211,6 +202,8 @@ export default async function AccountPage({
           </div>
         </section>
       </div>
+
+      <DeleteAccount />
     </div>
   );
 }
