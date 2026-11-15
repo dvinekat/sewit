@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { getAdminDashboard } from "@/lib/admin/queries";
 import { requireAdmin } from "@/lib/auth/guards";
-import { createClient } from "@/lib/supabase/server";
+import { formatPrice, pluralizeRu } from "@/lib/format";
+import { orderStatusLabel } from "@/lib/orders/queries";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -14,73 +15,148 @@ export const metadata: Metadata = {
 };
 
 const numberFormatter = new Intl.NumberFormat("ru-RU");
+const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
 
 /**
- * Каркас админки (T-06 → T-38).
+ * Дашборд админки (T-38).
  *
- * Доступ проверяют proxy и `requireAdmin`: обычный пользователь сюда не попадёт
- * даже по прямой ссылке. Наполнение (CRUD выкроек, заказов, промокодов) —
- * задачи T-39…T-42.
+ * Счётчики и последние заказы читаются под ролью admin: черновики и чужие
+ * заказы видны только администратору благодаря RLS, а не фильтрам в коде.
  */
 export default async function AdminPage() {
   const admin = await requireAdmin();
-  const supabase = await createClient();
-
-  const [published, drafts, orders] = await Promise.all([
-    supabase
-      .from("patterns")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "published"),
-    supabase.from("patterns").select("id", { count: "exact", head: true }).eq("status", "draft"),
-    supabase.from("orders").select("id", { count: "exact", head: true }),
-  ]);
+  const dashboard = await getAdminDashboard();
 
   const stats = [
-    { label: "Опубликовано выкроек", value: published.count ?? 0 },
-    { label: "Черновиков", value: drafts.count ?? 0 },
-    { label: "Заказов", value: orders.count ?? 0 },
+    { label: "Опубликовано выкроек", value: numberFormatter.format(dashboard.published) },
+    { label: "Черновиков", value: numberFormatter.format(dashboard.drafts) },
+    { label: "Заказов всего", value: numberFormatter.format(dashboard.orders) },
+    { label: "Выручка (демо)", value: formatPrice(dashboard.revenue) },
   ];
 
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Админка</p>
-          <Badge variant="sage">роль admin</Badge>
-        </div>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Обзор</p>
         <h1 className="font-display text-3xl tracking-tight sm:text-4xl">Служебный раздел</h1>
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Вы вошли как {admin.email}. Управление каталогом, заказами и промокодами появится
-          следующими шагами — каркас и защита роли уже работают.
+          Вы вошли как {admin.email}. Здесь видно состояние каталога, продаж и промокодов; действия
+          доступны в разделах слева.
         </p>
       </header>
 
-      <dl className="grid gap-4 sm:grid-cols-3">
+      <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-2xl border border-line bg-card p-5">
             <dt className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</dt>
-            <dd className="mt-2 font-display text-3xl">{numberFormatter.format(stat.value)}</dd>
+            <dd className="mt-2 font-display text-2xl xl:text-3xl">{stat.value}</dd>
           </div>
         ))}
       </dl>
 
-      <section className="rounded-2xl border border-line bg-card p-6">
-        <h2 className="font-display text-xl">Что уже проверяется</h2>
-        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-          <li>• Анонимный пользователь уходит на страницу входа, а не видит админку.</li>
-          <li>• Покупатель без роли admin получает редирект в кабинет с пояснением.</li>
-          <li>• Счётчики читаются через RLS: черновики видны только администратору.</li>
-        </ul>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link href="/catalog" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
-            Каталог на сайте
-          </Link>
-          <Link href="/account" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-            Вернуться в кабинет
+      <section
+        aria-labelledby="recent-orders"
+        className="rounded-2xl border border-line bg-card p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="recent-orders" className="font-display text-xl">
+            Последние заказы
+          </h2>
+          <Link
+            href="/admin/orders"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            Все заказы
           </Link>
         </div>
+
+        {dashboard.recent.length === 0 ? (
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Заказов пока нет. Демо-оплата появится здесь сразу после оформления покупки.
+          </p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[560px] border-collapse text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Заказ
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Покупатель
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Дата
+                  </th>
+                  <th scope="col" className="py-2 pr-3 font-medium">
+                    Статус
+                  </th>
+                  <th scope="col" className="py-2 text-right font-medium">
+                    Итого
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/70">
+                {dashboard.recent.map((order) => (
+                  <tr key={order.id}>
+                    <td className="py-2.5 pr-3">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="font-medium underline-offset-4 hover:underline"
+                      >
+                        {order.number}
+                      </Link>
+                    </td>
+                    <td className="py-2.5 pr-3 text-muted-foreground">
+                      {order.buyer?.email ?? "Аккаунт удалён"}
+                    </td>
+                    <td className="py-2.5 pr-3 text-muted-foreground">
+                      {dateFormatter.format(new Date(order.createdAt))}
+                    </td>
+                    <td className="py-2.5 pr-3">{orderStatusLabel(order.status)}</td>
+                    <td className="py-2.5 text-right font-display">{formatPrice(order.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <section className="rounded-2xl border border-line bg-card p-5">
+          <h2 className="font-display text-xl">Промокоды</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {dashboard.activePromos > 0
+              ? `${dashboard.activePromos} ${pluralizeRu(dashboard.activePromos, "активный промокод", "активных промокода", "активных промокодов")}.`
+              : "Активных промокодов нет — скидку на оформлении сейчас получить нельзя."}
+          </p>
+          <Link
+            href="/admin/promo"
+            className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-4")}
+          >
+            Управлять промокодами
+          </Link>
+        </section>
+
+        <section className="rounded-2xl border border-line bg-card p-5">
+          <h2 className="font-display text-xl">Сводка продаж</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Сумма оплаченных заказов, средний чек и топ-3 выкройки за 30 дней, 90 дней или всё
+            время.
+          </p>
+          <Link
+            href="/admin/sales"
+            className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-4")}
+          >
+            Открыть сводку
+          </Link>
+        </section>
+      </div>
     </div>
   );
 }

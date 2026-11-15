@@ -37,3 +37,51 @@ export function buildMeasurementsSnapshot(
     captured_at: capturedAt.toISOString(),
   };
 }
+
+/**
+ * Чтение снапшота из jsonb (админская карточка заказа, T-41).
+ *
+ * Схема jsonb не типизирована на уровне БД, поэтому мусор в колонке не должен
+ * ронять страницу: неизвестные поля отбрасываются, обязательные мерки
+ * проверяются как числа.
+ */
+export function parseMeasurementsSnapshot(raw: unknown): MeasurementsSnapshot | null {
+  if (typeof raw !== "object" || raw === null) return null;
+
+  const source = raw as Record<string, unknown>;
+  const toNumber = (value: unknown): number | null => {
+    const parsed = typeof value === "number" ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const bust = toNumber(source.bust);
+  const waist = toNumber(source.waist);
+  const hips = toNumber(source.hips);
+  const height = toNumber(source.height);
+
+  if (bust === null || waist === null || hips === null || height === null) return null;
+
+  return {
+    bust,
+    waist,
+    hips,
+    height,
+    recommended_size: typeof source.recommended_size === "string" ? source.recommended_size : "",
+    alternatives: Array.isArray(source.alternatives)
+      ? source.alternatives.filter((item): item is string => typeof item === "string")
+      : [],
+    warnings: Array.isArray(source.warnings)
+      ? source.warnings.flatMap((item) => {
+          if (typeof item !== "object" || item === null) return [];
+
+          const warning = item as Record<string, unknown>;
+          const title = typeof warning.title === "string" ? warning.title : "";
+          const message = typeof warning.message === "string" ? warning.message : "";
+          const code = typeof warning.code === "string" ? warning.code : "warning";
+
+          return title || message ? [{ code, title, message }] : [];
+        })
+      : [],
+    captured_at: typeof source.captured_at === "string" ? source.captured_at : "",
+  };
+}
