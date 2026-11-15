@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
+
+/** Supabase грузится отдельным чанком: кнопка не критична для первой отрисовки. */
+async function supabaseClient() {
+  const { createClient } = await import("@/lib/supabase/client");
+  return createClient();
+}
 
 type FavoriteState = "checking" | "anonymous" | "off" | "on";
 
@@ -36,9 +41,9 @@ export function FavoriteButton({
     if (!hasSupabaseEnv()) return;
 
     let active = true;
-    const supabase = createClient();
 
     void (async () => {
+      const supabase = await supabaseClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -82,7 +87,7 @@ export function FavoriteButton({
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
+    const supabase = await supabaseClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

@@ -77,20 +77,25 @@ export default async function CatalogPage({
       </div>
 
       {visible.length > 0 ? (
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((pattern) => (
-            <PatternCard
-              key={pattern.id}
-              pattern={pattern}
-              categoryTitle={categoryTitles.get(pattern.categorySlug) ?? ""}
-            />
-          ))}
-        </div>
+        <section aria-labelledby="catalog-results" className="mt-8">
+          <h2 id="catalog-results" className="sr-only">
+            Результаты каталога
+          </h2>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((pattern) => (
+              <PatternCard
+                key={pattern.id}
+                pattern={pattern}
+                categoryTitle={categoryTitles.get(pattern.categorySlug) ?? ""}
+              />
+            ))}
+          </div>
+        </section>
       ) : (
         <div className="mt-8 rounded-2xl border border-dashed border-line bg-card p-10 text-center">
-          <p className="font-display text-2xl">
+          <h2 className="font-display text-2xl">
             {filtersActive ? "Ничего не нашлось" : "В этой категории пока пусто"}
-          </p>
+          </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
             {filtersActive
               ? "Попробуйте убрать часть фильтров или изменить поисковый запрос — поиск идёт по названию и описанию."

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
@@ -84,7 +84,7 @@ export function RegisterForm({ next }: { next: string }) {
             <Link
               href="/legal/privacy"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="font-medium text-primary underline-offset-4 hover:underline"
             >
               обработку персональных данных

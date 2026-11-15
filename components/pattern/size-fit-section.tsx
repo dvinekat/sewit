@@ -13,9 +13,14 @@ import {
   type MeasurementsValues,
 } from "@/lib/schemas/measurements";
 import { fitSize, garmentTypeForCategory, type SizeFitResult } from "@/lib/size-fit";
-import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
+
+/** Supabase грузится отдельным чанком: мерки нужны только после первой отрисовки. */
+async function supabaseClient() {
+  const { createClient } = await import("@/lib/supabase/client");
+  return createClient();
+}
 
 const EMPTY_VALUES: Record<MeasurementsField, string> = {
   bust: "",
@@ -68,9 +73,9 @@ export function SizeFitSection({
     if (!hasSupabaseEnv()) return;
 
     let active = true;
-    const supabase = createClient();
 
     void (async () => {
+      const supabase = await supabaseClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();

@@ -6,9 +6,18 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { buttonVariants } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
+
+/**
+ * Клиент Supabase грузится отдельным чанком: шапка нужна на каждой странице,
+ * а проверка сессии — после первой отрисовки. Так auth-js не попадает в
+ * first-load JS витрины (T-46, бюджет бандла).
+ */
+async function supabaseClient() {
+  const { createClient } = await import("@/lib/supabase/client");
+  return createClient();
+}
 
 /**
  * Меню аккаунта в шапке (T-05, T-07).
@@ -28,13 +37,15 @@ export function AccountMenu() {
     if (!hasSupabaseEnv()) return;
 
     let active = true;
-    const supabase = createClient();
 
-    void supabase.auth.getUser().then(({ data }) => {
+    void (async () => {
+      const supabase = await supabaseClient();
+      const { data } = await supabase.auth.getUser();
+
       if (!active) return;
       setEmail(data.user?.email ?? null);
       setReady(true);
-    });
+    })();
 
     return () => {
       active = false;
@@ -44,20 +55,32 @@ export function AccountMenu() {
   useEffect(() => {
     if (!hasSupabaseEnv()) return;
 
-    const supabase = createClient();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user.email ?? null);
-      setReady(true);
-    });
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
 
-    return () => data.subscription.unsubscribe();
+    void (async () => {
+      const supabase = await supabaseClient();
+      if (!active) return;
+
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setEmail(session?.user.email ?? null);
+        setReady(true);
+      });
+
+      unsubscribe = () => data.subscription.unsubscribe();
+    })();
+
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
   }, []);
 
   async function handleSignOut() {
     if (!hasSupabaseEnv() || signingOut) return;
 
     setSigningOut(true);
-    const supabase = createClient();
+    const supabase = await supabaseClient();
     await supabase.auth.signOut();
     setSigningOut(false);
     // Полная загрузка: серверные страницы и шапка одновременно теряют сессию.
