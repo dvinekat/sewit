@@ -315,7 +315,7 @@
 
 ### 7.2 Инфраструктура и деплой
 
-Часы учтены в T-02, T-03, T-47 (всего 5 ч); здесь — приёмочный чек-лист.
+Часы учтены в T-02, T-03, T-47 (всего 5 ч); здесь — приёмочный чек-лист. Пошагово — [runbook-deploy.md](runbook-deploy.md).
 
 - [ ] Проект Supabase `sewit-prod` создан, `supabase link` выполнен
 - [ ] `supabase db push` применён, RLS включён, бакеты `covers` (public) и `patterns` (private) созданы
