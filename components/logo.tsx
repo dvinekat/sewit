@@ -7,7 +7,7 @@ export function Logo({ className, compact = false }: { className?: string; compa
   return (
     <Link
       href="/"
-      aria-label="SewIt — на главную"
+      aria-label="SewIt выкройки по меркам — на главную"
       className={cn("group inline-flex items-center gap-2.5 rounded-lg", className)}
     >
       <span className="grid size-9 shrink-0 place-items-center rounded-[11px] bg-primary text-primary-foreground shadow-sm transition-colors group-hover:bg-primary/90">

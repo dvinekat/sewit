@@ -1,57 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore, useState } from "react";
+import { useState } from "react";
 
-import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE, hasCookieConsent } from "@/lib/cookie-consent";
-
-/** Внешних событий нет: отметка меняется только этой кнопкой. */
-function subscribe(): () => void {
-  return () => {};
-}
-
-function getSnapshot(): boolean {
-  try {
-    return hasCookieConsent(window.localStorage.getItem(COOKIE_CONSENT_KEY));
-  } catch {
-    // Приватный режим может запрещать localStorage — считаем, что согласия нет.
-    return false;
-  }
-}
-
-/** На сервере баннер не рендерим: localStorage доступен только в браузере. */
-function getServerSnapshot(): boolean {
-  return true;
-}
+import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/lib/cookie-consent";
 
 /**
  * Cookie-баннер (T-44, FR-9.3).
  *
- * `useSyncExternalStore` читает localStorage без setState в эффекте: сервер
- * рендерит страницу без баннера, а после гидратации React подставляет
- * настоящее значение без рассинхрона разметки.
+ * Баннер входит в серверный HTML, а не появляется после гидратации: это лучший
+ * LCP на мобильном (Lighthouse ставил задержку отрисовки 2,2 с именно баннеру).
+ * Тем, кто уже принял условия, его прячет ещё до первой отрисовки инлайн-скрипт
+ * в `app/layout.tsx` — он ставит `data-cookie-consent` на `<html>`, правило
+ * в `globals.css` скрывает блок. Поэтому вспышки баннера при повторных заходах нет.
  */
 export function CookieBanner() {
-  const consented = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [acceptedNow, setAcceptedNow] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
-  if (consented || acceptedNow) return null;
+  if (hidden) return null;
 
   function accept() {
     try {
       window.localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE);
+      document.documentElement.dataset.cookieConsent = COOKIE_CONSENT_VALUE;
     } catch {
-      // Сохранить не удалось, но в пределах страницы баннер больше не мешает.
+      // Приватный режим может запрещать localStorage — в пределах страницы
+      // баннер всё равно закрывается.
     }
 
-    setAcceptedNow(true);
+    setHidden(true);
   }
 
   return (
     <div
       role="dialog"
       aria-label="Использование cookie"
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-2xl border border-line bg-card p-4 shadow-lg sm:inset-x-6 sm:p-5 print:hidden"
+      className="cookie-banner fixed inset-x-3 bottom-3 z-50 mx-auto max-w-3xl rounded-2xl border border-line bg-card p-4 shadow-lg sm:inset-x-6 sm:p-5 print:hidden"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-muted-foreground">

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { PatternCover } from "@/components/pattern-cover";
 import { FavoriteButton } from "@/components/pattern/favorite-button";
+import { Pattern3dViewer } from "@/components/pattern/pattern-3d-viewer";
 import { PatternConfigurator } from "@/components/pattern/pattern-configurator";
 import { SizeFitSection } from "@/components/pattern/size-fit-section";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +88,14 @@ export default async function PatternPage({ params }: PatternPageProps) {
               className="aspect-[4/3] w-full"
             />
           </div>
+
+          {pattern.model3dUrl ? (
+            <Pattern3dViewer
+              modelUrl={pattern.model3dUrl}
+              posterUrl={pattern.coverUrl}
+              title={pattern.title}
+            />
+          ) : null}
 
           <section aria-labelledby="description-title" className="mt-8">
             <h2 id="description-title" className="font-display text-2xl">

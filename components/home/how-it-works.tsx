@@ -46,7 +46,7 @@ export function HowItWorks() {
             >
               <span
                 aria-hidden="true"
-                className="font-display text-4xl leading-none text-primary/25"
+                className="font-display text-4xl leading-none text-primary/75"
               >
                 {step.number}
               </span>

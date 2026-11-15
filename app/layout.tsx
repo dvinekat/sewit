@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { CookieBanner } from "@/components/legal/cookie-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { COOKIE_CONSENT_KEY, COOKIE_CONSENT_VALUE } from "@/lib/cookie-consent";
 import { site } from "@/lib/site";
 
 import "./globals.css";
@@ -61,21 +62,29 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Отметка о согласии живёт в localStorage, но баннер отрисован в HTML.
+  // Скрипт выполняется до первой отрисовки и прячет баннер тем, кто уже принял
+  // условия, — без вспышки и без ожидания гидратации.
+  const consentScript = `try{if(localStorage.getItem(${JSON.stringify(COOKIE_CONSENT_KEY)})===${JSON.stringify(COOKIE_CONSENT_VALUE)}){document.documentElement.dataset.cookieConsent=${JSON.stringify(COOKIE_CONSENT_VALUE)}}}catch(e){}`;
+
   return (
     <html lang="ru">
       <body className="flex min-h-dvh flex-col bg-background font-sans text-foreground">
+        <script dangerouslySetInnerHTML={{ __html: consentScript }} />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:text-primary-foreground"
         >
           Перейти к содержимому
         </a>
+        {/* Баннер стоит до основного содержимого, хотя и закреплён внизу:
+            так браузер рисует его в первом кадре, и он не тормозит LCP. */}
+        <CookieBanner />
         <SiteHeader />
         <main id="main" className="flex-1">
           {children}
         </main>
         <SiteFooter />
-        <CookieBanner />
       </body>
     </html>
   );
