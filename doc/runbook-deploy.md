@@ -1,7 +1,7 @@
 # SewIt — runbook деплоя на free tier
 
-**Документ:** runbook · **Версия:** 1.0 · **Дата:** 15.11.2026
-**Статус:** 🟡 draft · **Связанные документы:** [README.md](../README.md) (8.4, 8.5, 12), [tasks.MD](tasks.MD) (T-47, 7.2), [architecture.md](architecture.md)
+**Документ:** runbook · **Версия:** 1.1 · **Дата:** 21.11.2026
+**Статус:** ✅ approved · **Связанные документы:** [README.md](../README.md) (8.4, 8.5, 12), [tasks.MD](tasks.MD) (T-47, 7.2), [architecture.md](architecture.md)
 
 ---
 
@@ -68,7 +68,7 @@ $site = "https://<project>.vercel.app"
 
 Сценарные проверки (README 12, 13):
 
-- [ ] Вход админом `admin@sewit.example` / `sewit-demo`, публикация черновика (в сиде есть `dress-back`) → выкройка видна в каталоге.
+- [ ] Вход админом `admin@sewit.example` с паролем `DEMO_ADMIN_PASSWORD` из `.env.local` (не `sewit-demo`), публикация черновика (в сиде есть `dress-back`) → выкройка видна в каталоге.
 - [ ] Вход покупателем `user@sewit.example` / `sewit-demo`, демо-покупка с промокодом `SEWIT10` → заказ и библиотека.
 - [ ] PDF из библиотеки скачивается и открывается; прямая ссылка без сессии — 401.
 - [ ] 3D на карточке платья-рубашки открывается.
@@ -99,9 +99,45 @@ $site = "https://<project>.vercel.app"
 | Vercel Hobby: ~100 деплоев в день | для правок хватает с запасом |
 | Превью-деплой на PR | проверять изменения по preview-ссылке до мержа в `main` |
 
-Резерв демо без Supabase CLI: `node --env-file=.env.local scripts/backup-demo-data.mjs` — кладёт JSON всех публичных таблиц в `.cache/backups/<дата>/` (файлы в git не попадают). Если Docker и Supabase CLI доступны, дополнительно — `supabase db dump -f sewit-demo.sql`.
+### 6.1 Пробуждение проекта и резерв демо-данных
 
-### 6.1 Пароли демо-пользователей
+Supabase Free ставит проект на паузу после ~7 дней без запросов: сайт и вход начинают отвечать ошибкой, но данные не удаляются — восстановление доступно в течение года.
+
+**Разбудить проект:**
+
+1. Открыть [дашборд](https://supabase.com/dashboard/project/uzesfoapakxavemcdrkf), выбрать организацию и проект `uzesfoapakxavemcdrkf`.
+2. Нажать **Resume project** и подтвердить: проект возвращается в состояние до паузы — данные, настройки, бакеты.
+3. Дождаться статуса Active (обычно 1–5 минут) и открыть https://sewit.vercel.app/catalog: шесть выкроек означают, что база отвечает.
+
+Вместо дашборда можно вызвать Management API (нужен `SUPABASE_ACCESS_TOKEN`):
+
+```powershell
+curl.exe -X POST "https://api.supabase.com/v1/projects/uzesfoapakxavemcdrkf/restore" `
+  -H "Authorization: Bearer $env:SUPABASE_ACCESS_TOKEN"
+
+curl.exe "https://api.supabase.com/v1/projects/uzesfoapakxavemcdrkf/health" `
+  -H "Authorization: Bearer $env:SUPABASE_ACCESS_TOKEN"
+```
+
+`restore` отвечает 200, `health` — пока не вернёт `"healthy": true`.
+
+**Снять свежий резерв:**
+
+```powershell
+node --env-file=.env.local scripts/backup-demo-data.mjs
+```
+
+Скрипт читает `NEXT_PUBLIC_SUPABASE_URL` и `SUPABASE_SERVICE_ROLE_KEY` из `.env.local`, выгружает 14 публичных таблиц (`patterns`, `pattern_files`, `orders`, `entitlements`, `download_log`, …) и кладёт по JSON-файлу на таблицу плюс `manifest.json` со счётчиками в `.cache/backups/<YYYY-MM-DD_HH-mm>/` (время UTC). Каталог в git не попадает.
+
+Что резерв не покрывает: `auth.users`, определения схемы и RLS, объекты Storage (PDF, обложки, `.glb`). Это резерв контента и заказов, а не замена полному дампу; полный дамп — только при Docker и Supabase CLI:
+
+```powershell
+supabase db dump -f sewit-demo.sql
+```
+
+Когда снимать: за день до показа, за час до показа (сразу после пробуждения) и после массовых правок в админке.
+
+### 6.2 Пароли демо-пользователей
 
 `seed.sql` лежит в публичном репозитории, поэтому его пароль (`sewit-demo`) — только для локальной разработки. На боевой базе пароль админа другой:
 

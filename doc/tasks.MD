@@ -323,7 +323,7 @@
 - [x] Vercel: импорт репозитория, Framework = Next.js, env Production заданы, прод — https://sewit.vercel.app
 - [x] Production-ветка `main`: пуш в `main` пересобирает прод; превью-деплои на PR защищены Vercel Authentication и для шаринга не годятся
 - [x] `pnpm build` в CI зелёный (GitHub Actions run 44894242714), `pnpm install --frozen-lockfile` воспроизводим
-- [ ] `supabase db dump` — заменён JSON-резервом `scripts/backup-demo-data.mjs` (без Docker и CLI), полный дамп снять при первой возможности
+- [ ] `supabase db dump` — заменён JSON-резервом `scripts/backup-demo-data.mjs` (без Docker и CLI; auth, схема и Storage в него не входят), полный дамп снять при первой возможности; как разбудить проект и снять резерв — [runbook-deploy.md](runbook-deploy.md), раздел 6.1
 
 ### 7.3 Правовой контур
 

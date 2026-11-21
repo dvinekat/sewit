@@ -1,6 +1,6 @@
 # SewIt — архитектура MVP
 
-**Документ:** архитектура · **Версия:** 1.0 · **Дата:** 13.11.2026
+**Документ:** архитектура · **Версия:** 1.1 · **Дата:** 21.11.2026
 **Статус:** ✅ approved · **Связанные документы:** [README.md](../README.md) (разделы 5–8), [tasks.MD](tasks.MD), [индекс документации](README.md)
 
 ---
@@ -112,16 +112,18 @@ sequenceDiagram
     participant S as Storage
 
     U->>W: GET /api/download/id с сессией в cookie
-    W->>D: select entitlement по id и auth.uid
+    W->>D: select entitlement по id (RLS: только свой)
     alt Право есть
         D-->>W: Строка entitlement
         W->>S: createSignedUrl путь и TTL 600 секунд
         S-->>W: Подписанный URL
+        W->>S: fetch PDF по подписанной ссылке
+        S-->>W: PDF A4
+        W->>W: титульный лист через pdf-lib
         W->>D: insert download_log
-        W-->>U: 302 на подписанный URL
-        U->>S: Скачивание PDF A4
+        W-->>U: 200 PDF (attachment), Cache-Control: no-store
     else Права нет
-        D-->>W: Пустой результат
+        D-->>W: Пустая строка
         W-->>U: 403 без деталей
     end
 ```
@@ -131,9 +133,9 @@ sequenceDiagram
 | Правило | Реализация | Требование |
 |---|---|---|
 | Файл не отдаётся напрямую | Бакет `patterns` приватный, публичного URL не существует | FR-7.1 |
-| Право проверяется до подписи | `lib/entitlements.ts` + запрос к БД от имени пользователя | FR-7.2 |
+| Право проверяется до подписи | Route handler: сессия → своя строка `entitlements` (RLS) → сверка `user_id`; чужая строка → 403 | FR-7.2 |
 | Ссылка живёт 10 минут | `createSignedUrl(path, 600)`, значение из `DOWNLOAD_URL_TTL_SECONDS` | FR-7.1 |
-| Каждое скачивание фиксируется | `insert into download_log` до редиректа | FR-7.3 |
+| Каждое скачивание фиксируется | `insert into download_log` перед ответом с PDF | FR-7.3 |
 | Титульный лист | `pdf-lib` собирает первую страницу с мерками и параметрами из заказа | FR-4.4 |
 
 ---

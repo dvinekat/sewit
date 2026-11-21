@@ -24,3 +24,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+      - name: Client bundle has no service_role references
+        run: |
+          if grep -rIl "SUPABASE_SERVICE_ROLE_KEY" .next/static; then
+            echo "::error::service_role попал в клиентский бандл"
+            exit 1
+          fi

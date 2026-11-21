@@ -1,6 +1,6 @@
 # SewIt — онлайн-сервис готовых выкроек с персональной кастомизацией
 
-**Документ:** техническое задание (README) · **Версия:** 1.0 · **Дата:** 13.11.2026
+**Документ:** техническое задание (README) · **Версия:** 1.1 · **Дата:** 21.11.2026
 **Статус:** согласовано по итогам 3 сессий уточнения (15 вопросов)
 **Тип проекта:** учебный MVP · **Команда:** 1 человек · **Срок:** ~2 недели · **Бюджет:** 0 ₽
 
@@ -403,31 +403,29 @@ d_i = 0.4·|ОГ − b_i|/b_i + 0.3·|ОТ − w_i|/w_i + 0.3·|ОБ − h_i|/h_
 
 ```
 sewit/
-├─ app/                    # только маршруты и композиция
-│  ├─ (shop)/catalog/, (shop)/patterns/[slug]/
+├─ app/                      # только маршруты и композиция
+│  ├─ catalog/, patterns/[slug]/, patterns/[slug]/instructions/
 │  ├─ (auth)/login/, register/, reset-password/
-│  ├─ (account)/account/{orders,library,profile,favorites}/
-│  ├─ checkout/, checkout/payment/
-│  ├─ admin/{patterns,categories,orders,promos,reports}/
-│  ├─ legal/{offer,privacy,returns}/, print-guide/
-│  ├─ api/checkout/, api/download/[entitlementId]/
-│  └─ sitemap.ts, robots.ts, opengraph-image.tsx, loading.tsx, error.tsx, not-found.tsx
-├─ components/             # ui/ (shadcn, не правится вручную), catalog/, pattern/, checkout/, account/, admin/, model-viewer.tsx
+│  ├─ (account)/account/{orders,library,favorites}/, account/
+│  ├─ cart/, checkout/{payment,success}/
+│  ├─ admin/{patterns,categories,orders,promo,sales}/
+│  ├─ legal/[doc]/, help/printing/, health/, auth/callback/
+│  └─ api/download/[entitlementId]/, sitemap.ts, robots.ts, error.tsx, not-found.tsx
+├─ components/               # ui/ (shadcn, не правится вручную), home/, catalog/, pattern/, cart/, checkout/, account/, admin/, legal/
 ├─ lib/
-│  ├─ supabase/{client,server,middleware}.ts
-│  ├─ size-fit.ts, variant.ts, pricing.ts, promo.ts, entitlements.ts
-│  ├─ schemas/             # zod-схемы форм и экшенов
+│  ├─ supabase/{client,server,public,service,proxy}.ts
+│  ├─ size-fit.ts, variant.ts, pricing.ts, promo.ts, access.ts
+│  ├─ schemas/               # zod-схемы форм и экшенов
 │  └─ pdf/title-page.ts
-├─ tests/                  # *.test.ts рядом с модулем или здесь
+├─ tests/                    # *.test.ts
 ├─ supabase/
-│  ├─ config.toml
-│  ├─ migrations/          # YYYYMMDDHHMMSS_init.sql, далее по одной на изменение
+│  ├─ migrations/            # YYYYMMDDHHMMSS_init.sql, далее по одной на изменение
 │  └─ seed.sql
-├─ doc/                    # README.md, tasks.MD, architecture.md (см. doc/README.md)
-├─ public/, scripts/       # og-заглушки и шрифты; seed-демо и check-rls.sql
+├─ doc/                      # README.md, tasks.MD, architecture.md, runbook-deploy.md
+├─ public/, assets/, scripts/  # og.png, демо-.glb, шрифты; seed, RLS-проверки, резерв
 ├─ .github/workflows/ci.yml
 ├─ .env.example, .nvmrc, .gitignore
-├─ next.config.ts, tsconfig.json, eslint.config.mjs, vitest.config.ts
+├─ proxy.ts, next.config.ts, tsconfig.json, eslint.config.mjs, vitest.config.mjs
 └─ package.json, pnpm-lock.yaml, README.md
 ```
 
@@ -457,7 +455,8 @@ Windows: PowerShell 7, Docker — с WSL2-бэкендом. Если Docker не
 | `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` | локально и CI | `supabase link` / `db push`; в Vercel не задаются |
 | `NEXT_PUBLIC_SITE_URL` | браузер и сервер | Канонический URL для OG, sitemap, redirect после входа |
 | `DOWNLOAD_URL_TTL_SECONDS` | сервер | TTL подписанной ссылки, по умолчанию `600` (FR-7.1) |
-| `NEXT_PUBLIC_DEMO_PAYMENT` | браузер | Флаг демо-оплаты и дисклеймеров FR-9.4 |
+
+Демо-оплата в MVP включена всегда: отдельного флага окружения нет, дисклеймер FR-9.4 показывается на странице оплаты и в чеке.
 
 Состав `.env.example`: эти ключи с пустыми значениями и комментарием в одну строку, без реальных секретов. `.env*.local` — в `.gitignore`; секреты продакшена — только в настройках Vercel и Supabase.
 
@@ -484,7 +483,7 @@ Windows: PowerShell 7, Docker — с WSL2-бэкендом. Если Docker не
 | `lib/variant.ts` | Нормализацию `variant_key` (порядок параметров, `none`), разбор строки, цепочку фолбэка: точно → `none` → базовый файл | Ошибка = «файл не найден» после оплаты |
 | `lib/promo.ts` | Валидный, просроченный, исчерпанный, выключенный промокод; скидка и итог в копейках | Деньги и лимиты — частая причина регрессий |
 | `lib/pricing.ts` | Итог корзины, округление, скидка не больше суммы | Числа должны совпадать в чеке, ЛК и сводке |
-| `lib/entitlements.ts` | Чистую функцию «есть ли право»: свой и чужой entitlement, отозванный заказ | Доступ к чужим файлам — критическая утечка |
+| `lib/access.ts` | Границы `/account` и `/admin`: гость → `/login`, не-админ → `/account?denied=admin`, админ → `allow` | Ошибка открывает админку или закрывает свой кабинет; проверка дублируется в proxy и страницах |
 
 Не автоматизируем в MVP: E2E-сценарии (ручной смоук раздела 13 на 360 и 1440 px), RLS (`scripts/check-rls.sql` + ручной сценарий), вёрстку PDF и титульного листа, 3D-вьюер, a11y (Lighthouse + проход вручную), письма восстановления пароля, кросс-браузерность. Причина одна: 10 дней и один разработчик — эти проверки дешевле делать руками перед деплоем, чем поддерживать Playwright. Запуск: `pnpm test` (Vitest, без сети и БД), `pnpm test:watch`; тесты — обязательная часть CI (8.1).
 
@@ -495,8 +494,8 @@ Windows: PowerShell 7, Docker — с WSL2-бэкендом. Если Docker не
 | RLS | Включён на всех таблицах раздела 5; политики по таблицам — в `doc/architecture.md`; helper `is_admin()` по `profiles.role` | Аноним читает только `published`; пользователь — только свои `orders`, `measurements`, `entitlements`, `favorites` |
 | Файлы | Бакет лекал приватный, обложки — публичный бакет; PDF только по подписанной ссылке с TTL 10 мин | Прямой URL без подписи → 400/403 (FR-7.1) |
 | `service_role` | ❗Только серверные модули (`lib/supabase/server.ts`, `import 'server-only'`), никогда в `NEXT_PUBLIC_*` | Ключа нет в клиентском бандле (проверка `grep` в CI) |
-| Проверка прав | `lib/entitlements.ts` вызывается в route handler до подписи URL; `orders` правами не управляет | Чужой `entitlementId` → 403 (FR-7.2) |
-| Rate limit | Лимиты Supabase Auth на вход; скачивания — счётчик по `download_log` (N в минуту на пользователя); промокод — атомарный `UPDATE … WHERE used_count < max_uses` | Повторные клики и перебор промокодов не проходят |
+| Проверка прав | Route handler `app/api/download/[entitlementId]` до подписи URL сверяет `entitlement.user_id` с сессией; `orders` правами не управляет | Чужой `entitlementId` → 403 (FR-7.2) |
+| Rate limit | Лимиты Supabase Auth на вход; промокод — атомарный `UPDATE … WHERE used_count < max_uses`; скачивания логируются в `download_log` | Перебор паролей и промокодов не проходит; злоупотребление скачиванием видно в логе |
 | Валидация | Все входы через `zod`-схемы; мутации — серверные экшены с проверкой сессии | Нет записи в БД без серверной валидации |
 | Секреты | `.env*.local` в `.gitignore`; прод — только в Vercel/Supabase; `SUPABASE_ACCESS_TOKEN` не в Vercel | Секретов нет в git и в клиентском бандле |
 | Приватность | Только e-mail и мерки; согласие при регистрации; удаление аккаунта обезличивает заказы; сторонней аналитики нет | 152-ФЗ: минимум ПД, нет передачи третьим лицам |
