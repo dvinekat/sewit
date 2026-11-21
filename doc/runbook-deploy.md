@@ -149,6 +149,8 @@ node --env-file=.env.local scripts/rotate-demo-passwords.mjs
 
 Пароль покупателя `user@sewit.example / sewit-demo` остаётся публичным осознанно: это демо-доступ для сценария покупки, данные ненастоящие. Если начнут мусорить заказами — задать `DEMO_BUYER_PASSWORD` и повторить запуск скрипта.
 
+**Передача доступа проверяющему.** Покупатель: `user@sewit.example` / `sewit-demo` — публичный демо-доступ, он указан в README. Админ: `admin@sewit.example` + пароль из `.env.local` (`DEMO_ADMIN_PASSWORD`); передавать лично (почта или мессенджер), не добавлять в README и не коммитить. Если пароль забыт — посмотреть `.env.local`, а если его там нет — задать новый и прогнать скрипт выше: он обновит пользователя через Admin API и проверит вход. Альтернатива — Supabase Dashboard → Authentication → Users → сброс пароля.
+
 
 ---
 
