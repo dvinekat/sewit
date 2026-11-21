@@ -8,10 +8,11 @@ const dress = catalogPatterns.find((pattern) => pattern.slug === "dress-shirt")!
 const sizes = dress.sizes;
 
 const demo: Measurements = { bust: 88, waist: 70, hips: 96, height: 168 };
+const size46 = sizes.find((size) => size.label === "46")!;
 
 describe("формула расстояния", () => {
   it("точное совпадение мерок даёт ноль", () => {
-    const size = sizes[1]!;
+    const size = sizes.find((item) => item.label === "44")!;
     const exact = { bust: size.bust, waist: size.waist, hips: size.hips, height: size.heightMin };
 
     expect(sizeDistance(exact, size)).toBeCloseTo(0, 10);
@@ -19,16 +20,22 @@ describe("формула расстояния", () => {
 
   it("считает по весам 0,4 / 0,3 / 0,3", () => {
     // 88/70/96 против 92/74/100: 0,4·4/92 + 0,3·4/74 + 0,3·4/100.
-    expect(sizeDistance(demo, sizes[1]!)).toBeCloseTo(0.0456, 4);
+    expect(sizeDistance(demo, size46)).toBeCloseTo(0.0456, 4);
   });
 });
 
 describe("рекомендация размера", () => {
-  it("88/70/96/168 — размер 46, пограничный с 42", () => {
+  it("88/70/96/168 — новый размер 44, ближайшие 46 и 42", () => {
     const result = fitSize(demo, sizes, "shoulder");
 
-    expect(result.recommended.label).toBe("46");
-    expect(result.alternatives.map((size) => size.label)).toEqual(["42", "48"]);
+    expect(result.recommended.label).toBe("44");
+    expect(result.alternatives.map((size) => size.label)).toEqual(["46", "42"]);
+  });
+
+  it("мерки между 42 и 44 дают пограничный размер", () => {
+    const result = fitSize({ bust: 86, waist: 68, hips: 94, height: 164 }, sizes, "shoulder");
+
+    expect(result.recommended.label).toBe("44");
     expect(result.warnings.map((warning) => warning.code)).toContain("borderline");
   });
 
@@ -52,7 +59,7 @@ describe("рекомендация размера", () => {
   });
 
   it("отклонение роста ровно 4 см предупреждения не даёт", () => {
-    const result = fitSize({ ...demo, height: 169 }, sizes, "shoulder");
+    const result = fitSize({ ...demo, height: 168 }, sizes, "shoulder");
 
     expect(result.warnings.some((warning) => warning.code === "height")).toBe(false);
   });

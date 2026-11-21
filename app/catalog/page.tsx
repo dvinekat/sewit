@@ -16,7 +16,7 @@ import { listCategoriesWithCounts, listPublishedPatterns } from "@/lib/patterns"
 export const metadata: Metadata = {
   title: "Каталог выкроек",
   description:
-    "Каталог выкроек SewIt: платья, юбки, брюки, топы и верхняя одежда. Размеры 42, 46, 48 и 50, лекала PDF A4. Фильтры по размеру, сложности и цене.",
+    "Каталог выкроек SewIt: платья, юбки, брюки, топы и верхняя одежда. Размеры 42, 44, 46, 48 и 50, лекала PDF A4. Фильтры по размеру, сложности и цене.",
   alternates: {
     canonical: "/catalog",
   },

@@ -153,7 +153,7 @@ export function publishBlockers({ status, coverUrl, sizes }: PublishInput): stri
   if (sizes.length === 0) {
     blockers.push("таблица размеров пуста");
   } else if (sizes.some((size) => !size.label.trim())) {
-    blockers.push("у каждого размера должна быть подпись (42, 46, 48…)");
+    blockers.push("у каждого размера должна быть подпись (42, 44, 46…)");
   }
 
   const missing = sizes

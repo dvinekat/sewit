@@ -43,13 +43,14 @@ export const catalogCategories: Category[] = [
 
 const SIZE_BASE: ReadonlyArray<Omit<PatternSize, "fabricConsumptionM">> = [
   { label: "42", bust: 84, waist: 66, hips: 92, heightMin: 158, heightMax: 168 },
+  { label: "44", bust: 88, waist: 70, hips: 96, heightMin: 159, heightMax: 169 },
   { label: "46", bust: 92, waist: 74, hips: 100, heightMin: 160, heightMax: 170 },
   { label: "48", bust: 96, waist: 78, hips: 104, heightMin: 161, heightMax: 171 },
   { label: "50", bust: 100, waist: 82, hips: 108, heightMin: 162, heightMax: 172 },
 ];
 
-/** Четыре размера 42/46/48/50 с разным расходом ткани. */
-function makeSizes(consumption: readonly [number, number, number, number]): PatternSize[] {
+/** Пять размеров 42/44/46/48/50 с разным расходом ткани. */
+function makeSizes(consumption: readonly [number, number, number, number, number]): PatternSize[] {
   return SIZE_BASE.map((size, index) => ({
     ...size,
     fabricConsumptionM: consumption[index],
@@ -99,7 +100,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 128,
     createdAt: "2026-10-02",
     publishedAt: "2026-10-05",
-    sizes: makeSizes([2.2, 2.5, 2.65, 2.8]),
+    sizes: makeSizes([2.2, 2.35, 2.5, 2.65, 2.8]),
     params: [LENGTH_MIDI_MAXI(), SLEEVE_SHORT_LONG()],
   },
   {
@@ -126,7 +127,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 96,
     createdAt: "2026-09-18",
     publishedAt: "2026-09-20",
-    sizes: makeSizes([1.1, 1.2, 1.3, 1.4]),
+    sizes: makeSizes([1.1, 1.15, 1.2, 1.3, 1.4]),
     params: [param("length", "Длина", [available("mini", "Mini"), available("midi", "Midi")])],
   },
   {
@@ -153,7 +154,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 88,
     createdAt: "2026-10-11",
     publishedAt: "2026-10-12",
-    sizes: makeSizes([2.4, 2.6, 2.75, 2.9]),
+    sizes: makeSizes([2.4, 2.5, 2.6, 2.75, 2.9]),
     params: [FIT_FITTED_OVERSIZE()],
   },
   {
@@ -175,7 +176,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 74,
     createdAt: "2026-09-30",
     publishedAt: "2026-10-01",
-    sizes: makeSizes([1.0, 1.1, 1.15, 1.2]),
+    sizes: makeSizes([1.0, 1.05, 1.1, 1.15, 1.2]),
     params: [NECKLINE_ROUND_V()],
   },
   {
@@ -197,7 +198,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 112,
     createdAt: "2026-10-20",
     publishedAt: "2026-10-21",
-    sizes: makeSizes([2.0, 2.2, 2.35, 2.5]),
+    sizes: makeSizes([2.0, 2.1, 2.2, 2.35, 2.5]),
     params: [
       param("length", "Длина", [
         available("cropped", "Укороченная"),
@@ -230,7 +231,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 67,
     createdAt: "2026-10-28",
     publishedAt: "2026-10-29",
-    sizes: makeSizes([1.6, 1.8, 1.9, 2.0]),
+    sizes: makeSizes([1.6, 1.7, 1.8, 1.9, 2.0]),
     params: [
       LENGTH_MIDI_MAXI(),
       param("neckline", "Вырез", [
@@ -258,7 +259,7 @@ export const catalogPatterns: Pattern[] = [
     salesCount: 0,
     createdAt: "2026-11-10",
     publishedAt: null,
-    sizes: makeSizes([1.9, 2.1, 2.25, 2.4]),
+    sizes: makeSizes([1.9, 2.0, 2.1, 2.25, 2.4]),
     params: [LENGTH_MIDI_MAXI()],
   },
 ];

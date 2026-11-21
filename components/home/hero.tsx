@@ -43,7 +43,7 @@ export function Hero() {
           </div>
 
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            {["6 моделей", "Размеры 42 · 46 · 48 · 50", "PDF A4"].map((item) => (
+            {["6 моделей", "Размеры 42 · 44 · 46 · 48 · 50", "PDF A4"].map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <Check aria-hidden="true" className="size-4 text-sage" />
                 {item}

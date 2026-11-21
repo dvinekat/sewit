@@ -39,7 +39,8 @@ describe("разбор URL-состояния каталога", () => {
     });
   });
 
-  it("принимает новый размер 48", () => {
+  it("принимает новые размеры 44 и 48", () => {
+    expect(parseCatalogQuery({ size: "44" })).toEqual({ size: "44", sort: "new" });
     expect(parseCatalogQuery({ size: "48" })).toEqual({ size: "48", sort: "new" });
   });
 
@@ -47,7 +48,7 @@ describe("разбор URL-состояния каталога", () => {
     expect(
       parseCatalogQuery({
         category: "Обувь",
-        size: "44",
+        size: "52",
         level: "9",
         price: "cheap",
         sort: "random",
