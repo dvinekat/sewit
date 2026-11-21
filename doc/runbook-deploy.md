@@ -9,6 +9,10 @@
 
 Деплой MVP стоит **0 ₽**: Supabase Free + Vercel Hobby, карта не нужна.
 
+**Текущий прод:** https://sewit.vercel.app (Vercel Hobby, проект `sewit`, ветка `main`) · **Код:** https://github.com/dvinekat/sewit (публичный).
+
+❗Ссылку преподавателю и в README даём только как `https://sewit.vercel.app`. У каждой сборки есть свой адрес вида `https://sewit-<hash>-dvinekat.vercel.app` — он одноразовый и закрыт Vercel Authentication (для посторонних 401), делиться им нельзя.
+
 Две части живут раздельно и обновляются независимо:
 
 | Часть | Где | Что обновляет |
