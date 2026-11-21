@@ -101,6 +101,19 @@ $site = "https://<project>.vercel.app"
 
 Резерв демо без Supabase CLI: `node --env-file=.env.local scripts/backup-demo-data.mjs` — кладёт JSON всех публичных таблиц в `.cache/backups/<дата>/` (файлы в git не попадают). Если Docker и Supabase CLI доступны, дополнительно — `supabase db dump -f sewit-demo.sql`.
 
+### 6.1 Пароли демо-пользователей
+
+`seed.sql` лежит в публичном репозитории, поэтому его пароль (`sewit-demo`) — только для локальной разработки. На боевой базе пароль админа другой:
+
+```powershell
+node --env-file=.env.local scripts/rotate-demo-passwords.mjs
+```
+
+Скрипт берёт `DEMO_ADMIN_PASSWORD` из `.env.local` (в git не попадает), обновляет пользователя через Admin API и проверяет, что новый пароль работает, а `sewit-demo` — уже нет. Запускать после каждого `db reset`/`db push` с сидом на боевой базе и при подозрении на утечку.
+
+Пароль покупателя `user@sewit.example / sewit-demo` остаётся публичным осознанно: это демо-доступ для сценария покупки, данные ненастоящие. Если начнут мусорить заказами — задать `DEMO_BUYER_PASSWORD` и повторить запуск скрипта.
+
+
 ---
 
 ## 7. Открытые вопросы
