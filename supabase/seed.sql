@@ -39,8 +39,8 @@ select
   v.allowances,
   v.price,
   null,
-  -- Демо-модель для 3D-вьюера (T-43): путь от корня сайта, пока нет GLB из T-C07.
-  case when v.slug = 'dress-shirt' then '/models/demo-dress-form.glb' end,
+  -- Демо-модель для 3D-вьюера (T-43): одна на все карточки, пока нет GLB из T-C07.
+  '/models/demo-dress-form.glb',
   v.status::public.pattern_status,
   v.sales_count,
   v.created_at,
